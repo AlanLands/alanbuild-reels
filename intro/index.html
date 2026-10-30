@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Theme "Studio Grey + Liquid Glass" (AlanBuild): the motionthekx layout (flat grey, black SF, one red accent,
+         Instagram blue) with iOS liquid-glass surfaces: frosted refraction over soft drifting light, bright rims, moving sheen. */
+      /* San Francisco (macOS system file SFNS.ttf, variable weight) is the only typeface */
+      /* SF @font-face removed (not redistributable): Inter / JetBrains Mono used instead */
+      :root {
+        --paper: #f5faf1;
+        --ink: #1f4d12;
+        --accent: #4f9a2e; /* text-safe green */
+        --green: #94d768;
+        --c2: #ffffff; /* combo partner colour */
+        --c2glow: rgba(148,215,104,0.30);
+        --card: #f5faf1;
+        --green-deep: #4f9a2e;
+        --end: #94d768; /* end card base (user pick) */
+        --sans: Inter;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; font-family: var(--sans); color: var(--ink); background: var(--paper); }
+      .scene { position: absolute; inset: 0; }
+
+      /* soft light behind the glass: monochrome with a whisper of blue, so the glass has something to bend */
+      .blob { position: absolute; border-radius: 50%; }
+      #b1, #l1 { width: 900px; height: 900px; left: -260px; top: 420px; background: radial-gradient(circle, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 66%); }
+      #b2, #l2 { width: 820px; height: 820px; left: 460px; top: 900px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 66%); }
+      #b3, #l3 { width: 620px; height: 620px; left: 520px; top: 420px; background: radial-gradient(circle, var(--c2glow) 0%, rgba(255,255,255,0) 66%); }
+
+      /* iOS liquid glass */
+      .lq { position: absolute; overflow: hidden; --sx: -45%;
+        background: linear-gradient(145deg, rgba(255,255,255,0.80) 0%, rgba(255,255,255,0.45) 46%, rgba(148,215,104,0.22) 100%);
+        -webkit-backdrop-filter: blur(22px) saturate(185%) brightness(1.04); backdrop-filter: blur(22px) saturate(185%) brightness(1.04);
+        border: 1px solid rgba(148,215,104,0.55);
+        box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), inset 0 -1.5px 1px rgba(255,255,255,0.5), inset 0 -14px 28px rgba(148,215,104,0.12),
+          0 22px 48px rgba(47,110,28,0.16), 0 3px 8px rgba(47,110,28,0.08); }
+      .lq::before { content: ""; position: absolute; left: 5%; right: 5%; top: 2px; height: 42%; max-height: 80px; border-radius: inherit;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.65), rgba(255,255,255,0)); pointer-events: none; }
+      .lq::after { content: ""; position: absolute; top: -30%; bottom: -30%; width: 30%; left: var(--sx); transform: skewX(-20deg);
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%); pointer-events: none; }
+      .lq.dark { background: linear-gradient(145deg, rgba(255,255,255,0.92) 0%, rgba(246,252,241,0.88) 48%, rgba(224,244,210,0.90) 100%);
+        border-color: rgba(148,215,104,0.35);
+        box-shadow: inset 0 1.5px 0 rgba(255,255,255,1), inset 0 0 40px rgba(148,215,104,0.10), 0 40px 90px rgba(47,110,28,0.20), 0 0 90px rgba(148,215,104,0.25); }
+      .lq.dark::before { background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(255,255,255,0)); }
+      .lq.dark::after { background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%); }
+      .lq.blue { background: linear-gradient(135deg, var(--green) 0%, var(--accent) 100%); border-color: rgba(255,255,255,0.40); text-shadow: 0 2px 6px rgba(20,50,10,0.45);
+        box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.55), inset 0 -2px 4px rgba(20,60,10,0.35), 0 16px 36px rgba(148,215,104,0.30); }
+      .lq.blue::before { background: linear-gradient(to bottom, rgba(255,255,255,0.30), rgba(255,255,255,0)); }
+
+      /* scene 1: "A new" + roller under a glass capsule */
+      #h1 { position: absolute; left: 0; right: 0; top: 560px; text-align: center; font-size: 168px; font-weight: 700; letter-spacing: -0.045em; line-height: 1.15; }
+      #h1 .mk { display: inline-block; overflow: hidden; padding: 0 12px 18px; vertical-align: top; }
+      #h1 .mk span { display: inline-block; }
+      #wn { color: var(--accent); }
+      #lens { left: 265px; top: 903px; width: 550px; height: 114px; border-radius: 999px; }
+      #rollwrap { position: absolute; left: 0; right: 0; top: 780px; height: 360px; overflow: hidden; z-index: 2;
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%); }
+      #stack { position: absolute; left: 0; right: 0; top: 120px; }
+      .rw { height: 120px; line-height: 120px; text-align: center; font-size: 84px; font-weight: 650; letter-spacing: -0.035em; }
+      #title { position: absolute; inset: 0; transform-origin: 540px 860px; }
+      #r0, #r4 { color: var(--accent); }
+
+      /* scene 2: intro line */
+      #line { position: absolute; left: 90px; right: 90px; top: 690px; text-align: center; font-size: 98px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.08; }
+      #line span { display: inline-block; margin: 0 8px; }
+      #line .hot { color: var(--accent); }
+      #s2z, #endz { position: absolute; inset: 0; transform-origin: 540px 900px; }
+      #info { left: 150px; top: 1100px; width: 780px; height: 96px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 18px;
+        font-size: 36px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+      #info i { font-style: normal; color: var(--accent); }
+
+      /* scene 3: dark liquid-glass profile card */
+      #s3bg { position: absolute; inset: 0; background: var(--card); opacity: 0; }
+      #card { left: 90px; top: 600px; width: 900px; height: 640px; border-radius: 52px; color: var(--ink); transform-origin: 250px 518px; }
+      #cardh { position: absolute; left: 0; right: 0; top: 64px; text-align: center; font-size: 50px; font-weight: 800; letter-spacing: -0.02em; }
+      .mono { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--ink);
+        background: radial-gradient(circle at 32% 28%, #ffffff 0%, #f4f4f6 55%, #d9dade 100%);
+        box-shadow: inset 0 -6px 14px rgba(0,0,0,0.10), inset 0 4px 8px rgba(255,255,255,0.9), 0 10px 26px rgba(0,0,0,0.25);
+        }
+      .mono svg { width: 100%; height: 100%; border-radius: 50%; }
+      #av { left: 70px; top: 190px; width: 190px; height: 190px; font-size: 92px; }
+      #pname { position: absolute; left: 310px; top: 222px; font-size: 38px; font-weight: 700; }
+      #bio { position: absolute; left: 310px; top: 282px; width: 560px; font-size: 36px; line-height: 1.35; color: rgba(31,77,18,0.78); }
+      #bio b { font-weight: 400; color: var(--accent); }
+      .btn { position: absolute; top: 470px; height: 96px; width: 370px; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 600; color: #fff; }
+      #bf { left: 65px; }
+      #bm { left: 465px; color: var(--ink); background: linear-gradient(145deg, #ffffff, #eef7e8); border-color: rgba(148,215,104,0.6);
+        box-shadow: inset 0 1.5px 0 #fff, 0 6px 16px rgba(47,110,28,0.10); }
+
+      /* scene 4: dark stage with blue light, glass Follow, avatar sphere, blue flood, glass handle pill */
+      #s4bg { position: absolute; inset: 0; background: var(--card); }
+      #g1 { position: absolute; width: 900px; height: 900px; left: 90px; top: 450px; border-radius: 50%; background: radial-gradient(circle, rgba(148,215,104,0.55) 0%, rgba(148,215,104,0) 65%); }
+      #big { left: 160px; top: 830px; width: 760px; height: 140px; border-radius: 40px; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 54px; font-weight: 600; }
+      #big span { position: absolute; }
+      #ball { left: 0; top: 0; width: 190px; height: 190px; font-size: 96px; }
+      #flood { position: absolute; left: 520px; top: 1500px; width: 40px; height: 40px; border-radius: 50%; background: var(--green); }
+      #endgrad { position: absolute; inset: 0; background: linear-gradient(160deg, var(--green) 0%, var(--c2) 100%); opacity: 0; }
+      
+      #endpill { left: 110px; top: 830px; width: 860px; height: 180px; border-radius: 999px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(255,255,255,0.86) 50%, rgba(240,250,232,0.94)); border-color: rgba(255,255,255,0.9);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -2px 2px rgba(255,255,255,0.2), 0 24px 50px rgba(30,70,15,0.35); }
+      #endpill { -webkit-backdrop-filter: blur(22px) saturate(105%) brightness(1.06); backdrop-filter: blur(22px) saturate(105%) brightness(1.06); }
+      #endh { position: absolute; left: 0; right: 0; top: 860px; text-align: center; font-size: 96px; font-weight: 800; letter-spacing: -0.045em; color: var(--ink); }
+      /* tap hand: white finger slides in on the zoom and presses Follow (tip at 760,905) */
+      #tap { z-index: 50; }
+      #loop { z-index: 60; } #loopin { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+      #hand { position: absolute; left: 685px; top: 905px; width: 220px; transform-origin: 75px 0; filter: drop-shadow(0 14px 24px rgba(31,77,18,0.40)) drop-shadow(0 0 2px rgba(31,77,18,0.35)); }
+      .ring { position: absolute; left: 680px; top: 825px; width: 160px; height: 160px; border-radius: 50%; border: 5px solid var(--c2); opacity: 0; }
+      /* chosen theme "green-in-white" (user 2026-10-30): white end screen with a green glow, green glass pill, white handle */
+      #flood { background: #ffffff; }
+      #endgrad { background: radial-gradient(circle at 50% 48%, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 55%), linear-gradient(160deg, #ffffff 0%, #eef8e6 100%); }
+      #endpill { background: linear-gradient(135deg, #94d768 0%, #4f9a2e 100%); border-color: rgba(255,255,255,0.7); box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 24px 50px rgba(79,154,46,0.35); }
+      #endh { color: #ffffff; text-shadow: 0 2px 8px rgba(20,60,10,0.35); }
+      .ring { border-color: var(--green); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="11.4" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="11.4"></audio>
+
+      <div id="bg" class="scene clip" data-start="0" data-duration="8" data-track-index="0" data-track-kind="graphics">
+        <div class="blob" id="b1"></div><div class="blob" id="b2"></div><div class="blob" id="b3"></div>
+      </div>
+
+      <div id="s1" class="scene clip" data-start="0" data-duration="4.1" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="title">
+          <div id="h1"><span class="mk"><span id="wa">A</span></span><span class="mk"><span id="wn">new</span></span></div>
+          <div class="lq" id="lens"></div>
+          <div id="rollwrap"><div id="stack"><div class="rw" id="r0">beginning</div><div class="rw" id="r1">code</div><div class="rw" id="r2">design</div><div class="rw" id="r3">AI</div><div class="rw" id="r4">beginning</div></div></div>
+        </div>
+      </div>
+
+      <div id="s2" class="scene clip" data-start="4" data-duration="1.95" data-track-index="2" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="s2z">
+          <div id="line">
+            <span>Introducing</span><span>a</span><span>new</span><span>page</span><span>for</span><span class="hot">code,</span><span class="hot">design</span><span>&amp;</span><span class="hot">AI</span>
+          </div>
+          <div class="lq" id="info">new reel every few days <i>·</i> built with AI</div>
+        </div>
+      </div>
+
+      <div id="s3" class="scene clip" data-start="5.85" data-duration="1.85" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="s3bg"></div>
+        <div class="lq dark" id="card">
+          <div id="cardh">AlanBuild</div>
+          <div class="mono" id="av"><svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><circle cx="128" cy="128" r="128" fill="#fbfdf8"/><circle cx="128" cy="128" r="126" fill="none" stroke="#94d768" stroke-width="2.5"/><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+          <div id="pname">Alan</div>
+          <div id="bio">coding, design &amp; AI tools, built in public with AI <b>@alan.build</b></div>
+          <div class="btn lq blue" id="bf">Follow</div>
+          <div class="btn lq" id="bm">Message</div>
+        </div>
+      </div>
+
+      <div id="s4" class="scene clip" data-start="7.65" data-duration="3.75" data-track-index="4" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="s4bg"></div>
+        <div id="g1"></div>
+        <div class="lq blue" id="big" data-layout-allow-overlap><span id="t1">Follow</span><span id="t2">Followed</span><span id="t3" style="padding-left: 150px">AlanBuild</span></div>
+        <div class="mono" id="ball"><svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg"><circle cx="128" cy="128" r="128" fill="#fbfdf8"/><circle cx="128" cy="128" r="126" fill="none" stroke="#94d768" stroke-width="2.5"/><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+        <div id="flood"></div>
+        <div id="endgrad"></div>
+        <div id="endz">
+          <div class="lq" id="endpill"></div>
+          <div id="endh">@alan.build</div>
+        </div>
+      </div>
+      <div id="tap" class="scene clip" data-start="7.1" data-duration="1.2" data-track-index="5" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div class="ring" id="rg1"></div><div class="ring" id="rg2"></div>
+        <svg id="hand" viewBox="0 0 120 150"><defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe3ea"/></linearGradient></defs>
+          <g fill="url(#hg)"><rect x="30" y="0" width="22" height="82" rx="11"/><rect x="52" y="40" width="21" height="52" rx="10.5"/><rect x="73" y="46" width="20" height="48" rx="10"/><rect x="93" y="54" width="18" height="42" rx="9"/>
+          <rect x="30" y="62" width="81" height="72" rx="26"/><rect x="8" y="66" width="22" height="52" rx="11" transform="rotate(-32 19 92)"/></g></svg>
+      </div>
+
+      <div id="loop" class="scene clip" data-start="10.85" data-duration="0.55" data-track-index="6" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="loopin"><div class="blob" id="l1"></div><div class="blob" id="l2"></div><div class="blob" id="l3"></div></div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const blurIn = { opacity: 0, filter: "blur(20px)", y: 16 };
+      const sharp = { opacity: 1, filter: "blur(0px)", y: 0, ease: "expo.out" };
+
+      // soft light drifts slowly the whole time (the glass refracts it)
+      tl.fromTo("#b1", { x: 0, y: 0 }, { x: 160, y: -120, duration: 10, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b2", { x: 0, y: 0 }, { x: -200, y: -260, duration: 10, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b3", { x: 0, y: 0 }, { x: -180, y: 220, duration: 10, ease: "sine.inOut" }, 0);
+
+      // ── scene 1 (0-4): "A" on frame 0, "new" blurs in, glass capsule grows, roller locks on the music's beats
+      // "A new": each word rises out of its own mask, one smooth expo glide, no pop
+      tl.fromTo(["#wa", "#wn"], { yPercent: 105, rotation: 4 }, { yPercent: 0, rotation: 0, duration: 0.9, stagger: 0.12, ease: "expo.out" }, 0.05);
+      tl.fromTo("#lens", { scaleX: 0.3, scaleY: 0.6, opacity: 0 }, { scaleX: 1, scaleY: 1, opacity: 1, duration: 0.9, ease: "expo.out" }, 0.45);
+            // "beginning" lands in the glass capsule (tick at 0.75), then the whole title holds and slowly pushes in until the drop
+      tl.fromTo("#r0", { opacity: 0, filter: "blur(18px)", y: 30, scale: 0.9 }, { opacity: 1, filter: "blur(0px)", y: 0, scale: 1, duration: 0.6, ease: "expo.out" }, 0.6);
+      // the roller: neighbours sit blurred above/below; it scrolls motion / design / story and locks back on "beginning", each lock on a beat
+      gsap.set(["#r2", "#r3", "#r4"], { opacity: 0.3, filter: "blur(6px)" });
+      tl.fromTo("#r1", { opacity: 0, filter: "blur(12px)" }, { opacity: 0.3, filter: "blur(6px)", duration: 0.6 }, 0.8); // neighbour below fades in after "beginning"
+      [1, 2, 3, 4].forEach((i) => {
+        const at = 0.84 + i * 0.5; // locks at 1.5, 2.0, 2.5, 3.0
+        tl.to("#stack", { y: -120 * i, duration: 0.36, ease: "back.out(1.3)" }, at);
+        tl.to("#r" + (i - 1), { opacity: 0.3, filter: "blur(6px)", duration: 0.3 }, at);
+        tl.to("#r" + i, { opacity: 1, filter: "blur(0px)", duration: 0.3 }, at);
+      });
+      tl.fromTo("#lens", { "--sx": "-45%" }, { "--sx": "130%", duration: 1.4, ease: "power2.inOut" }, 2.0);
+      tl.fromTo("#title", { scale: 1 }, { scale: 1.06, duration: 3.74, ease: "none" }, 0); // one steady push-in
+      tl.to("#title", { opacity: 0, filter: "blur(24px)", duration: 0.28, ease: "power2.in" }, 3.74); // hold "A new beginning" to the drop
+
+      // ── scene 2 (4-5.95): the line builds word by word on the drop
+      tl.fromTo("#s2z", { scale: 1 }, { scale: 1.06, duration: 1.95, ease: "none" }, 4.0);
+      tl.fromTo("#line span", blurIn, { ...sharp, duration: 0.5, stagger: 0.1 }, 4.02);
+      tl.fromTo("#info", { opacity: 0, y: 24, scale: 0.94, filter: "blur(10px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "expo.out" }, 4.95);
+      tl.to(["#line", "#info"], { opacity: 0, filter: "blur(24px)", duration: 0.25, ease: "power2.in" }, 5.65);
+
+      // ── scene 3 (5.85-7.65): card is up fast, bio readable at once, buttons land, push into Follow
+      tl.fromTo("#card", { opacity: 0, scale: 0.94, y: 50, filter: "blur(12px)" }, { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", duration: 0.6, ease: "expo.out" }, 5.87);
+      tl.fromTo("#card", { "--sx": "-45%" }, { "--sx": "130%", duration: 1.0, ease: "power2.inOut" }, 6.0);
+      tl.fromTo("#av", { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "expo.out" }, 6.0);
+      tl.fromTo("#pname", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 6.1);
+      tl.fromTo("#bio", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.45, ease: "steps(26)" }, 6.2);
+      tl.fromTo(["#bf", "#bm"], { y: 30, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, stagger: 0.08, ease: "expo.out" }, 6.6);
+      // Follow's centre (card 250,518 = page 340,1118) lands on the big button (540,900); scale = 760/370
+      tl.to("#card", { scale: 2.054, x: 200, y: -218, duration: 0.55, ease: "power4.inOut" }, 7.1);
+      tl.to("#s3bg", { opacity: 1, duration: 0.4 }, 7.15);
+
+      // ── scene 4 (7.65-10.9): Followed, avatar rolls in and docks, blue flood from below, glass handle, short hold
+      gsap.set(["#t2", "#t3"], { opacity: 0 });
+      tl.to("#big", { scale: 0.94, duration: 0.07, ease: "power2.in" }, 7.66);
+      tl.to("#big", { scale: 1, duration: 0.6, ease: "elastic.out(1, 0.55)" }, 7.73);
+      tl.fromTo("#big", { "--sx": "-45%" }, { "--sx": "130%", duration: 0.7, ease: "power2.out" }, 7.72);
+      tl.to("#t1", { opacity: 0, filter: "blur(8px)", duration: 0.15 }, 7.7);
+      tl.fromTo("#t2", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25 }, 7.74);
+      tl.fromTo("#ball", { x: 1180, y: 1010, rotation: 360 }, { x: 760, y: 1010, rotation: 0, duration: 0.5, ease: "expo.out" }, 8.1);
+      tl.to("#ball", { x: 185, y: 805, duration: 0.42, ease: "power3.inOut" }, 8.6);
+      tl.to("#t2", { opacity: 0, filter: "blur(8px)", duration: 0.15 }, 8.7);
+      tl.fromTo("#t3", { opacity: 0, x: 30, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.4, ease: "expo.out" }, 8.9);
+      tl.fromTo("#big", { scaleX: 1 }, { scaleX: 1.03, duration: 0.1, yoyo: true, repeat: 1, ease: "sine.inOut" }, 8.98);
+      gsap.set("#flood", { scale: 0 });
+      tl.to("#flood", { scale: 120, duration: 0.5, ease: "power3.in" }, 9.2);
+      tl.to("#endgrad", { opacity: 1, duration: 0.35, ease: "power1.inOut" }, 9.62); // the flood settles into the combo gradient
+      tl.fromTo("#endpill", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.9, ease: "elastic.out(1, 0.7)" }, 9.75);
+      tl.fromTo("#endpill", { "--sx": "-45%" }, { "--sx": "130%", duration: 1.0, ease: "power2.inOut" }, 9.95);
+      tl.fromTo("#endh", { opacity: 0, filter: "blur(20px)", scale: 1.06 }, { opacity: 1, filter: "blur(0px)", scale: 1, duration: 0.6, ease: "expo.out" }, 9.8);
+
+      // tap hand: rides in with the zoom, presses on the click (7.66), lifts and leaves before "Followed" settles; rings pulse from the fingertip
+      tl.fromTo("#hand", { x: 420, y: 620, rotation: -14, opacity: 0 }, { x: 0, y: 0, rotation: 0, opacity: 1, duration: 0.39, ease: "power3.out" }, 7.2);
+      tl.to("#hand", { scale: 0.86, y: 6, duration: 0.07, ease: "power2.in" }, 7.59);
+      tl.to("#hand", { scale: 1, y: 0, duration: 0.15, ease: "power2.out" }, 7.7);
+      tl.to("#hand", { x: 380, y: 560, rotation: -10, opacity: 0, duration: 0.4, ease: "power3.in" }, 7.85);
+      tl.fromTo("#rg1", { scale: 0.25, opacity: 0.9 }, { scale: 2.4, opacity: 0, duration: 0.6, ease: "expo.out", immediateRender: false }, 7.66);
+      tl.fromTo("#rg2", { scale: 0.25, opacity: 0.6 }, { scale: 3.6, opacity: 0, duration: 0.8, ease: "expo.out", immediateRender: false }, 7.76);
+
+      // loop: fade back to frame 0 (grey light + "A") so the reel restarts seamlessly
+      tl.fromTo("#endz", { scale: 1 }, { scale: 1.06, duration: 1.15, ease: "none" }, 9.75);
+      tl.to(["#endh", "#endpill"], { opacity: 0, filter: "blur(16px)", duration: 0.22, ease: "power2.in" }, 10.7);
+      tl.fromTo("#loopin", { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power1.inOut" }, 10.9);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
