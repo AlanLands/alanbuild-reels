@@ -32,8 +32,8 @@ npm run check           # lint, layout and contrast checks
     `backdrop-filter`, a bright rim, inset highlights, and a sheen that moves on a `--sx` custom property.
   - **The word roller** is a 6-line `forEach` (lines 201-206) that steps a stack of words onto the beat.
   - **The finger tap** is 4 lines (248-251): the hand slides in, presses, lifts and leaves.
-- **Sound** is one pre-mixed `assets/soundtrack.wav` under an `<audio>` tag. Every effect is a real recording,
-  placed on the frame where its action happens.
+- **Sound** is one pre-mixed `assets/soundtrack.wav` under an `<audio>` tag, every effect placed on the frame
+  where its action happens and the music cut at bar lines so its drop lands on the reveal.
 
 ## Fonts
 
@@ -45,8 +45,9 @@ one-line comments).
 ## Credits and licence
 
 - **Code:** MIT (see [`LICENSE`](LICENSE)).
-- **Music and sound effects:** they keep their own licences, CC0 or CC BY, from Freesound.org. Each folder's
-  `CREDITS.md` lists them, and CC BY sounds need that credit if you reuse them.
+- **Music and sound effects:** `intro/` uses real recordings from Freesound.org (CC0 / CC BY, listed in its
+  `CREDITS.md`; CC BY sounds need that credit if you reuse them). `02-this-reel-is-html/` uses music and effects
+  generated with ElevenLabs (see its `CREDITS.md`).
 - **Brand:** the AlanBuild name and the AB logo aren't licensed for reuse.
 
 Made with code + AI by AlanBuild. Follow [@alan.build](https://www.instagram.com/alan.build/) for the next build.
