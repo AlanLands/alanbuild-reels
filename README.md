@@ -9,6 +9,8 @@ real recorded sounds.
 |---|---|---|
 | [`intro/`](intro) | "A new beginning": word roller, liquid-glass profile card, finger tap on Follow, end card | 11.4 s |
 | [`02-this-reel-is-html/`](02-this-reel-is-html) | "This reel is 264 lines of HTML": the intro's own code scrolling next to the intro | 13.7 s |
+| [`05-logo-16px/`](05-logo-16px) | "This logo had to work at 16 pixels": 3 rounds of concepts, each shrunk to a real 16 px raster | 15.6 s |
+| [`07-typing-cursor/`](07-typing-cursor) | "Typing effect. Zero JavaScript.": border cursor, blink, `steps()` typing in 5 lines of CSS | 13.2 s |
 
 ## Render one
 
