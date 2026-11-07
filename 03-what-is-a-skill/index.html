@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* AlanBuild post 03 "What's a skill?" v2: voiceover-led cut. Green-in-White + one orange accent, San Francisco + SF Mono */
+      /* SF @font-face removed (not redistributable): Inter / JetBrains Mono used instead */
+      /* SF @font-face removed (not redistributable): Inter / JetBrains Mono used instead */
+      :root { --paper: #f5faf1; --ink: #1f4d12; --accent: #4f9a2e; --green: #94d768; --c2: #7cc552; --pop: #ff5a0a; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; font-family: Inter; color: var(--ink); background: var(--paper); }
+      .scene { position: absolute; inset: 0; }
+      /* everything sits 50 px lower than v1 so the bottom third isn't dead */
+      .z { position: absolute; left: 0; right: 0; top: 50px; bottom: -50px; transform-origin: 540px 910px; }
+      .blob { position: absolute; border-radius: 50%; }
+      #b1 { width: 900px; height: 900px; left: -260px; top: 420px; background: radial-gradient(circle, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 66%); }
+      #b2 { width: 820px; height: 820px; left: 460px; top: 900px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 66%); }
+      #simtag { position: absolute; left: 0; right: 0; top: 462px; text-align: center; font-size: 32px; font-weight: 700; color: #6f8a62; letter-spacing: 0.01em; }
+      #grid { position: absolute; left: -100px; top: 240px; width: 1280px; height: 1440px;
+        background-image: radial-gradient(circle, rgba(31,77,18,0.12) 3px, transparent 3.5px); background-size: 44px 44px; }
+
+      .lq { position: absolute; overflow: hidden; --sx: -45%;
+        background: linear-gradient(145deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.55) 46%, rgba(148,215,104,0.22) 100%);
+        -webkit-backdrop-filter: blur(22px) saturate(185%); backdrop-filter: blur(22px) saturate(185%);
+        border: 1.5px solid rgba(148,215,104,0.75);
+        box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 22px 48px rgba(47,110,28,0.14), 0 3px 8px rgba(47,110,28,0.08); }
+      .lq::after { content: ""; position: absolute; top: -30%; bottom: -30%; width: 30%; left: var(--sx); transform: skewX(-20deg);
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0) 100%); pointer-events: none; }
+      .lq.green { background: linear-gradient(135deg, #94d768 0%, #4f9a2e 100%); border-color: rgba(255,255,255,0.7); color: #fff; text-shadow: 0 2px 6px rgba(20,60,10,0.35);
+        box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), 0 20px 44px rgba(79,154,46,0.35); }
+      .o { color: var(--pop); }
+      .g { color: var(--accent); }
+      .title { position: absolute; left: 40px; right: 40px; top: 260px; text-align: center; font-size: 88px; font-weight: 800; letter-spacing: -0.05em; line-height: 1.08; }
+
+      /* 1 hook: viewer cards (badges pop in, no squash flip) */
+      .card { position: absolute; width: 460px; height: 150px; border-radius: 34px; background: rgba(255,255,255,0.88); border: 2px solid rgba(148,215,104,0.7); box-shadow: 0 14px 30px rgba(47,110,28,0.12); }
+      .card .nm { position: absolute; left: 30px; top: 0; height: 150px; line-height: 150px; font-size: 40px; font-weight: 700; letter-spacing: -0.03em; }
+      .card .w, .card .v { position: absolute; right: 20px; top: 45px; height: 60px; line-height: 60px; padding: 0 16px; border-radius: 999px; font-size: 28px; font-weight: 800; letter-spacing: 0.01em; }
+      .card .w { color: #9aae90; font-weight: 600; }
+      .card .v { opacity: 0; color: #fff; }
+      .card .v.stay { background: var(--accent); }
+      .card .v.skip { background: var(--pop); }
+
+      /* 2 one file */
+      #file { position: absolute; left: 400px; top: 640px; width: 280px; height: 350px; border-radius: 28px; }
+      #file .ln { position: absolute; left: 40px; height: 16px; border-radius: 8px; background: rgba(79,154,46,0.35); }
+      #file .fn { position: absolute; left: 0; right: 0; bottom: 34px; text-align: center; font-family: "JetBrains Mono"; font-size: 38px; font-weight: 700; }
+      #lines { position: absolute; left: 375px; top: 1040px; width: 330px; height: 110px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 54px; font-weight: 800; letter-spacing: -0.03em; }
+
+      /* 3 proof: crops of the real post 02 frames, same scale, so "tiny" is honest */
+      .strip { position: absolute; left: 60px; width: 960px; height: 288px; border-radius: 28px; overflow: hidden; border: 3px solid rgba(148,215,104,0.8); box-shadow: 0 20px 44px rgba(47,110,28,0.18); }
+      .strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      #stA { top: 560px; } #stB { top: 960px; border-color: var(--accent); }
+      .lab { position: absolute; left: 70px; font-size: 34px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+      #laA { top: 508px; } #laB { top: 908px; }
+      #quote { position: absolute; left: 120px; top: 930px; width: 840px; height: 150px; border-radius: 40px; }
+      #quote .qt { position: absolute; left: 0; right: 0; top: 22px; text-align: center; font-size: 52px; font-weight: 800; letter-spacing: -0.03em; }
+      #quote .qb { position: absolute; left: 0; right: 0; top: 88px; text-align: center; font-size: 32px; font-weight: 600; color: #6f8a62; }
+      #scores { position: absolute; left: 0; right: 0; top: 1280px; text-align: center; font-size: 130px; font-weight: 800; letter-spacing: -0.06em; line-height: 1; }
+      #scores span { display: inline-block; }
+      #arrow { color: #9aae90; margin: 0 30px; font-size: 90px; vertical-align: 14px; }
+      #hs { position: absolute; left: 0; right: 0; top: 1420px; text-align: center; font-size: 42px; font-weight: 800; color: #4f6f42; letter-spacing: -0.01em; }
+
+      /* 4 anatomy, one frame */
+      #code { position: absolute; left: 60px; top: 520px; width: 960px; height: 690px; border-radius: 40px; }
+      .cl { position: absolute; left: 50px; right: 30px; height: 60px; line-height: 60px; font-family: "JetBrains Mono"; font-size: 37px; font-weight: 600; white-space: pre; }
+      .cl i { font-style: normal; color: var(--accent); }
+      .cl.dim { color: #9aae90; }
+      .hl { position: absolute; left: 24px; right: 24px; border-radius: 18px; background: rgba(148,215,104,0.28); border: 2.5px solid rgba(79,154,46,0.8); opacity: 0; }
+      .tg { position: absolute; top: 1250px; height: 110px; border-radius: 999px; line-height: 110px; text-align: center; font-size: 50px; font-weight: 800; letter-spacing: -0.03em; }
+      #tg1 { left: 70px; width: 260px; } #tg2 { left: 350px; width: 380px; } #tg3 { left: 750px; width: 260px; }
+
+      /* 5 sleeps until the job matches */
+      .sk { position: absolute; left: 240px; width: 600px; height: 104px; border-radius: 999px; line-height: 104px; text-align: center; font-family: "JetBrains Mono"; font-size: 42px; font-weight: 700; color: #7e9474;
+        background: rgba(255,255,255,0.75); border: 2px solid rgba(148,215,104,0.5); }
+      #skHon { position: absolute; left: 240px; width: 600px; height: 104px; border-radius: 999px; line-height: 104px; text-align: center; font-family: "JetBrains Mono"; font-size: 42px; font-weight: 800; opacity: 0; }
+      #ld { position: absolute; left: 860px; height: 104px; line-height: 104px; font-size: 40px; font-weight: 800; color: var(--accent); opacity: 0; }
+      #bub { position: absolute; left: 180px; top: 1330px; width: 720px; height: 120px; border-radius: 60px 60px 60px 16px; display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 52px; font-weight: 700; letter-spacing: -0.02em; }
+      #bub span { opacity: 0; }
+
+      /* 6 question + 7 end */
+      #q { position: absolute; left: 40px; right: 40px; top: 640px; text-align: center; font-size: 112px; font-weight: 800; letter-spacing: -0.055em; line-height: 1.05; }
+      #qa { position: absolute; left: 290px; top: 1010px; width: 500px; height: 120px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 46px; font-weight: 700; letter-spacing: -0.02em; }
+      #lg { position: absolute; left: 430px; top: 560px; width: 220px; height: 220px; border-radius: 50%; background: #fbfdf8; border: 3px solid var(--green); box-shadow: 0 18px 40px rgba(47,110,28,0.22); }
+      #lg svg { width: 100%; height: 100%; }
+      #hp { left: 230px; top: 860px; width: 620px; height: 130px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 66px; font-weight: 800; letter-spacing: -0.04em; }
+      #cta { left: 140px; top: 1040px; width: 800px; height: 104px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 40px; font-weight: 650; letter-spacing: -0.02em; }
+      #cta b { font-family: "JetBrains Mono"; font-weight: 800; color: #fff; background: var(--pop); border-radius: 14px; padding: 4px 16px; letter-spacing: 0.02em; }
+      #veil { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="16.95" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="16.95"></audio>
+
+      <div id="bg" class="scene clip" data-start="0" data-duration="16.95" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <div class="blob" id="b1"></div><div class="blob" id="b2"></div><div id="grid"></div>
+      </div>
+
+      <!-- 1 hook (0-2.6) VO: "My AI tests my reels before I post." -->
+      <div id="s1" class="scene clip" data-start="0" data-duration="2.2" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s1z">
+          <div class="title" id="t1">My AI tests my reels<br><span class="g">before I post.</span></div>
+          <div id="simtag">10 simulated viewers ↓</div>
+          <div class="card" id="v0" style="left: 60px; top: 520px"><div class="nm">Doomscroller</div><div class="w">···</div><div class="v skip">SKIP 5s</div></div>
+          <div class="card" id="v1" style="left: 560px; top: 520px"><div class="nm">Designer</div><div class="w">···</div><div class="v stay">STAY</div></div>
+          <div class="card" id="v2" style="left: 60px; top: 690px"><div class="nm">Busy parent</div><div class="w">···</div><div class="v skip">SKIP 4s</div></div>
+          <div class="card" id="v3" style="left: 560px; top: 690px"><div class="nm">Editor</div><div class="w">···</div><div class="v stay">STAY</div></div>
+          <div class="card" id="v4" style="left: 60px; top: 860px"><div class="nm">Retiree</div><div class="w">···</div><div class="v skip">SKIP 3s</div></div>
+          <div class="card" id="v5" style="left: 560px; top: 860px"><div class="nm">AI skeptic</div><div class="w">···</div><div class="v stay">STAY</div></div>
+          <div class="card" id="v6" style="left: 60px; top: 1030px"><div class="nm">Hustler</div><div class="w">···</div><div class="v skip">SKIP 7s</div></div>
+          <div class="card" id="v7" style="left: 560px; top: 1030px"><div class="nm">Rival</div><div class="w">···</div><div class="v stay">STAY</div></div>
+          <div class="card" id="v8" style="left: 60px; top: 1200px"><div class="nm">Sound-off</div><div class="w">···</div><div class="v skip">SKIP 9s</div></div>
+          <div class="card" id="v9" style="left: 560px; top: 1200px"><div class="nm">Niche fan</div><div class="w">···</div><div class="v skip">SKIP 9s</div></div>
+        </div>
+      </div>
+
+      <!-- 2 one file (2.5-3.85) VO: "With one text file." -->
+      <div id="s2" class="scene clip" data-start="2.1" data-duration="1.15" data-track-index="2" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s2z">
+          <div class="title" id="t2">With<br><span class="g">one text file.</span></div>
+          <div class="lq" id="file">
+            <div class="ln" style="top: 60px; width: 200px"></div><div class="ln" style="top: 96px; width: 150px"></div><div class="ln" style="top: 132px; width: 180px"></div><div class="ln" style="top: 168px; width: 120px"></div>
+            <div class="fn">SKILL.md</div>
+          </div>
+          <div class="lq" id="lines"><span class="o">71</span>&nbsp;lines</div>
+        </div>
+      </div>
+
+      <!-- 3 proof (3.15-9.3) VO: "Four of ten viewers quit at four seconds. Too much tiny code." / "I fixed it. Hook score: fifty-three, to sixty-one." -->
+      <div id="s3" class="scene clip" data-start="3.15" data-duration="6.15" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s3z">
+          <div class="title" id="t3a"><span class="o">4 of 10</span> quit<br>at 4 seconds.</div>
+          <div class="title" id="t3b">I fixed it.<br><span class="g">Same skill, new test.</span></div>
+          <div class="lab o" id="laA">before · 20 px code</div>
+          <div class="strip" id="stA"><img src="assets/before_strip.jpg" alt="post 02 before: small code next to a phone"></div>
+          <div class="lq" id="quote"><div class="qt">“Too much tiny code.”</div><div class="qb">Busy parent · Doomscroller · Skeptic · Hustler</div></div>
+          <div class="lab g" id="laB">after · 30 px code</div>
+          <div class="strip" id="stB"><img src="assets/after_strip.jpg" alt="post 02 after: bigger code"></div>
+          <div id="scores"><span class="o" id="scA">53</span><span id="arrow">→</span><span class="g" id="scB">61</span></div>
+          <div id="hs">hook score / 100</div>
+        </div>
+      </div>
+
+      <!-- 4 anatomy (9.9-14.05) VO: "That file is a skill. A name, when to use it, and how." -->
+      <div id="s4" class="scene clip" data-start="9.15" data-duration="2.95" data-track-index="4" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s4z">
+          <div class="title" id="t4">That file<br><span class="g">is a skill.</span></div>
+          <div class="lq" id="code">
+            <div class="hl" id="hA" style="top: 92px; height: 66px"></div>
+            <div class="hl" id="hB" style="top: 152px; height: 186px"></div>
+            <div class="hl" id="hC" style="top: 452px; height: 186px"></div>
+            <div class="cl dim" style="top: 34px">---</div>
+            <div class="cl" style="top: 94px"><i>name</i>: hook-master</div>
+            <div class="cl" style="top: 154px"><i>description</i>: Test a reel with</div>
+            <div class="cl" style="top: 214px">  10 simulated viewers. Use when</div>
+            <div class="cl" style="top: 274px">  I say "test this hook".</div>
+            <div class="cl dim" style="top: 334px">---</div>
+            <div class="cl" style="top: 394px"># Hook Master</div>
+            <div class="cl" style="top: 454px">1. Watch the reel once</div>
+            <div class="cl" style="top: 514px">2. Send 10 viewer personas</div>
+            <div class="cl" style="top: 574px">3. Write the report + fixes</div>
+          </div>
+          <div class="lq tg" id="tg1">name</div>
+          <div class="lq tg" id="tg2"><span class="g">when</span> to use</div>
+          <div class="lq tg" id="tg3"><span class="g">how</span></div>
+        </div>
+      </div>
+
+      <!-- 5 trick (14.05-15.95) VO: "It sleeps until the job matches." -->
+      <div id="s5" class="scene clip" data-start="11.95" data-duration="1.75" data-track-index="5" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s5z">
+          <div class="title" id="t5">It sleeps until<br><span class="g">the job matches.</span></div>
+          <div class="sk" style="top: 520px">ig-caption</div>
+          <div class="sk" style="top: 640px">create-video</div>
+          <div class="sk" style="top: 760px">hook-master</div>
+          <div class="lq green" id="skHon" style="top: 760px">hook-master</div>
+          <div id="ld" style="top: 760px">✓</div>
+          <div class="sk" style="top: 880px">ig-reel</div>
+          <div class="sk" style="top: 1000px">watch</div>
+          <div class="sk" style="top: 1120px">hook-story</div>
+          <div class="lq" id="bub"><span>“test</span><span>this</span><span>hook”</span></div>
+        </div>
+      </div>
+
+      <!-- 6 question (15.85-17.5) VO: "What job would you give yours?" -->
+      <div id="s6" class="scene clip" data-start="13.55" data-duration="1.55" data-track-index="6" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s6z">
+          <div id="q">What job would<br>you give <span class="g">your AI?</span></div>
+          <div class="lq" id="qa">Tell me below ↓</div>
+        </div>
+      </div>
+
+      <!-- 7 end (17.4-19.6) VO: "Comment REPO for the file." -->
+      <div id="s7" class="scene clip" data-start="14.95" data-duration="2.0" data-track-index="7" data-track-kind="graphics" data-layout-allow-overlap>
+        <div class="z" id="s7z">
+          <div id="lg"><svg viewBox="0 0 256 256"><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+          <div class="lq green" id="hp">@alan.build</div>
+          <div class="lq" id="cta">Comment <b>REPO</b> for the skill file</div>
+        </div>
+        <div id="veil"></div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // scene starts follow the voiceover lines (audio/vo/timing.json)
+      const S2 = 2.1, S3 = 3.15, FIX = 6.55, S4 = 9.15, S5 = 11.95, S6 = 13.55, S7 = 14.95, END = 16.95;
+
+      tl.fromTo("#b1", { x: 0, y: 0 }, { x: 160, y: -120, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b2", { x: 0, y: 0 }, { x: -200, y: -260, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#grid", { y: 0 }, { y: -88, duration: END, ease: "none" }, 0);
+      // one steady push per scene (house zoom rule)
+      [["#s1z", 0, 2.2], ["#s2z", S2, 1.15], ["#s3z", S3, 6.15], ["#s4z", S4, 2.95], ["#s5z", S5, 1.75], ["#s6z", S6, 1.55], ["#s7z", S7, 2.0]]
+        .forEach(([id, at, d]) => tl.fromTo(id, { scale: 1 }, { scale: 1.06, duration: d, ease: "none" }, at));
+      const exit = (id, at) => tl.to(id, { opacity: 0, filter: "blur(14px)", duration: 0.16, ease: "power2.in" }, at);
+      const rise = (id, at) => tl.fromTo(id, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, at);
+
+      // ── 1 hook: verdict badges pop from frame 0 (two already in)
+      for (let i = 0; i < 10; i++) {
+        const at = i * 0.17 - 0.3, c = "#v" + i;
+        if (at < 0) { gsap.set(c + " .w", { opacity: 0 }); gsap.set(c + " .v", { opacity: 1 }); continue; }
+        tl.to(c + " .w", { opacity: 0, duration: 0.08 }, at);
+        tl.fromTo(c + " .v", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(2.6)" }, at);
+        tl.fromTo(c, { scale: 1 }, { scale: 1.04, duration: 0.1, yoyo: true, repeat: 1, ease: "power1.out" }, at);
+      }
+      // cards fly into the file, fading fast so they don't ghost over each other
+      tl.to(["#t1", "#simtag"], { opacity: 0, filter: "blur(12px)", duration: 0.16, ease: "power2.in" }, S2 - 0.1);
+      for (let i = 0; i < 10; i++) {
+        const left = i % 2 ? 560 : 60, top = 520 + Math.floor(i / 2) * 170;
+        tl.to("#v" + i, { x: 540 - (left + 230), y: 815 - (top + 75), scale: 0.2, duration: 0.3, ease: "power3.in" }, S2 - 0.14 + i * 0.01);
+        tl.to("#v" + i, { opacity: 0, duration: 0.14, ease: "power1.in" }, S2 - 0.08 + i * 0.01);
+      }
+
+      // ── 2 one file
+      rise("#t2", S2 + 0.04);
+      tl.fromTo("#file", { opacity: 0, scale: 0.4, rotation: -8 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.45, ease: "back.out(1.8)" }, S2 + 0.1);
+      tl.fromTo("#lines", { opacity: 0, y: 20, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2)" }, S2 + 0.45);
+      tl.fromTo("#file", { "--sx": "-45%" }, { "--sx": "130%", duration: 0.7, ease: "power2.inOut" }, S2 + 0.5);
+      exit("#s2z", S3 - 0.12);
+
+      // ── 3 proof: the before strip + the complaint, then the after strip + the score (synced to line 4)
+      gsap.set(["#t3b", "#laB", "#stB", "#scA", "#scB", "#arrow", "#hs"], { opacity: 0 });
+      rise("#t3a", S3 + 0.04);
+      tl.fromTo(["#laA", "#stA"], { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.04 }, S3 + 0.1);
+      tl.fromTo("#stA img", { scale: 1 }, { scale: 1.12, duration: 3.3, ease: "none" }, S3 + 0.1);
+      tl.fromTo("#quote", { opacity: 0, y: 30, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, S3 + 2.15);
+      tl.to(["#t3a", "#quote"], { opacity: 0, duration: 0.15 }, FIX - 0.05);
+      rise("#t3b", FIX + 0.05);
+      tl.fromTo(["#laB", "#stB"], { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "expo.out", stagger: 0.04 }, FIX + 0.12);
+      tl.fromTo("#hs", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3 }, FIX + 0.75);
+      tl.fromTo("#scA", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, FIX + 1.25);
+      tl.fromTo("#arrow", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, FIX + 1.55);
+      tl.fromTo("#scB", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.4)" }, FIX + 1.9);
+      exit("#s3z", S4 - 0.12);
+
+      // ── 4 anatomy: lines reveal, then name / when / how light up with the words
+      rise("#t4", S4 + 0.04);
+      tl.fromTo("#code", { opacity: 0, scale: 0.94, y: 30 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "expo.out" }, S4 + 0.06);
+      tl.fromTo("#code .cl", { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.25, ease: "power2.out", stagger: 0.04 }, S4 + 0.12);
+      [["#hA", "#tg1", S4 + 1.1], ["#hB", "#tg2", S4 + 1.5], ["#hC", "#tg3", S4 + 2.15]].forEach(([h, g, at]) => {
+        tl.fromTo(h, { opacity: 0, scale: 0.97 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, at);
+        tl.fromTo(g, { opacity: 0, y: 30, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2.2)" }, at);
+      });
+      exit("#s4z", S5 - 0.12);
+
+      // ── 5 trick: the prompt arrives, only the matching skill wakes up (on "matches")
+      rise("#t5", S5 + 0.04);
+      tl.fromTo(".sk", { opacity: 0, x: -30 }, { opacity: 0.6, x: 0, duration: 0.3, ease: "expo.out", stagger: 0.03 }, S5 + 0.06);
+      tl.fromTo("#bub", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.3, ease: "back.out(2)" }, S5 + 0.15);
+      tl.to("#bub span", { opacity: 1, duration: 0.06, stagger: 0.1 }, S5 + 0.25);
+      tl.fromTo("#skHon", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1.06, duration: 0.3, ease: "back.out(2.4)" }, S5 + 1.05);
+      tl.fromTo("#ld", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.25, ease: "back.out(2)" }, S5 + 1.12);
+      tl.fromTo("#skHon", { "--sx": "-45%" }, { "--sx": "130%", duration: 0.6, ease: "power2.inOut" }, S5 + 1.15);
+      exit("#s5z", S6 - 0.12);
+
+      // ── 6 question
+      tl.fromTo("#q", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out" }, S6 + 0.02);
+      tl.fromTo("#qa", { opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2)" }, S6 + 0.4);
+      exit("#s6z", S7 - 0.12);
+
+      // ── 7 end card
+      tl.fromTo("#lg", { scale: 0.5, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.55, ease: "back.out(1.7)" }, S7 + 0.02);
+      tl.fromTo("#hp", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.6, ease: "elastic.out(1, 0.7)" }, S7 + 0.2);
+      tl.fromTo("#cta", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)" }, S7 + 0.4);
+      tl.fromTo("#cta", { "--sx": "-45%" }, { "--sx": "130%", duration: 0.7, ease: "power2.inOut" }, S7 + 0.8);
+      tl.to("#veil", { opacity: 1, duration: 0.2, ease: "power1.inOut" }, END - 0.22);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

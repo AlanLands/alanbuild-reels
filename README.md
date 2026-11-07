@@ -9,6 +9,7 @@ real recorded sounds.
 |---|---|---|
 | [`intro/`](intro) | "A new beginning": word roller, liquid-glass profile card, finger tap on Follow, end card | 11.4 s |
 | [`02-this-reel-is-html/`](02-this-reel-is-html) | "This reel is 264 lines of HTML": the intro's own code scrolling next to the intro | 13.7 s |
+| [`03-what-is-a-skill/`](03-what-is-a-skill) | "What's a skill?": 10 simulated viewers test a reel, the 71-line skill file behind it, voiceover | 17 s |
 | [`05-logo-16px/`](05-logo-16px) | "This logo had to work at 16 pixels": 3 rounds of concepts, each shrunk to a real 16 px raster | 15.6 s |
 | [`07-typing-cursor/`](07-typing-cursor) | "Typing effect. Zero JavaScript.": border cursor, blink, `steps()` typing in 5 lines of CSS | 13.2 s |
 | [`09-easing/`](09-easing) | "Same move. Only 1 feels expensive.": `linear` vs `ease-out` vs `cubic-bezier(.16, 1, .3, 1)`, same distance, same 0.8 s | 14.0 s |
@@ -39,6 +40,14 @@ npm run check           # lint, layout and contrast checks
 - **Sound** is one pre-mixed `assets/soundtrack.wav` under an `<audio>` tag, every effect placed on the frame
   where its action happens and the music cut at bar lines so its drop lands on the reveal.
 
+## The skill from post 03
+
+[`skills/hook-master/SKILL.md`](skills/hook-master/SKILL.md) is the 71-line agent skill shown in post 03. It has your AI
+coding agent watch a finished reel once, then send 10 simulated viewer personas (doomscroller, busy parent, designer,
+editor, skeptic, sound-off viewer…) to decide second by second whether they'd skip, and write a report with ranked fixes.
+Drop the folder into your agent's skills directory (for Claude Code: `.claude/skills/`). It expects a `watch` skill
+that extracts frames and a transcript. It's a simulation, not real analytics.
+
 ## Fonts
 
 The published reels use San Francisco, but Apple's licence doesn't allow redistributing it. This repo uses **Inter**
@@ -52,6 +61,7 @@ one-line comments).
 - **Music and sound effects:** `intro/` uses real recordings from Freesound.org (CC0 / CC BY, listed in its
   `CREDITS.md`; CC BY sounds need that credit if you reuse them). `02-this-reel-is-html/` uses music and effects
   generated with ElevenLabs (see its `CREDITS.md`).
+  `03-what-is-a-skill/` uses an ElevenLabs voice, music and effects (see its `CREDITS.md`).
 - **Brand:** the AlanBuild name and the AB logo aren't licensed for reuse.
 
 Made with code + AI by AlanBuild. Follow [@alan.build](https://www.instagram.com/alan.build/) for the next build.
