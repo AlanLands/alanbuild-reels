@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* AlanBuild post 07 "Typing effect, zero JavaScript": Green-in-White + orange accent, SF + SF Mono.
+         The demo is driven by GSAP (seek-safe) but mirrors the on-screen CSS exactly: 1s step-end blink, 2s steps(15) width. */
+      /* SF @font-face removed (not redistributable): Inter / JetBrains Mono used instead */
+      /* SF @font-face removed (not redistributable): Inter / JetBrains Mono used instead */
+      :root { --paper: #f5faf1; --ink: #1f4d12; --accent: #4f9a2e; --green: #94d768; --pop: #ff5a0a; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; font-family: Inter; color: var(--ink); background: var(--paper); }
+      .scene { position: absolute; inset: 0; }
+      .blob { position: absolute; border-radius: 50%; }
+      #b1 { width: 900px; height: 900px; left: -260px; top: 420px; background: radial-gradient(circle, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 66%); }
+      #b2 { width: 820px; height: 820px; left: 460px; top: 900px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 66%); }
+
+      #hook, #ask { position: absolute; left: 0; right: 0; top: 280px; text-align: center; }
+      #ha { font-size: 112px; font-weight: 800; letter-spacing: -0.05em; line-height: 1.1; }
+      #hb { font-size: 84px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.2; color: var(--accent); }
+      #hb b, #cnt b { color: var(--pop); }
+      #ask { font-size: 84px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.12; }
+
+      /* the demo: one span, 88px monospace, 15ch wide */
+      #stagecard { position: absolute; left: 60px; top: 720px; width: 960px; height: 230px; border-radius: 40px; background: #fff;
+        border: 2px solid rgba(148,215,104,0.75); box-shadow: 0 22px 48px rgba(47,110,28,0.14); }
+      #demo { position: absolute; left: 132px; top: 772px; height: 126px; overflow: hidden; white-space: nowrap;
+        font-family: "JetBrains Mono"; font-size: 88px; font-weight: 700; line-height: 126px; color: var(--ink); width: 15ch;
+        border-right: 0.08em solid transparent; box-sizing: content-box; }
+
+      #code { position: absolute; left: 24px; top: 1080px; width: 1032px; border-radius: 34px; padding: 22px 24px;
+        background: #ffffffd9; border: 2px solid rgba(148,215,104,0.75); box-shadow: 0 22px 48px rgba(47,110,28,0.14); }
+      .k { position: relative; height: 58px; line-height: 58px; font-family: "JetBrains Mono"; font-size: 26px; font-weight: 600; white-space: pre; color: var(--ink); border-radius: 12px; padding-left: 10px; margin-left: -10px; }
+      .k i { font-style: normal; color: #3f7f24; }
+      .k span { position: absolute; left: 10px; top: 0; }
+      #cnt { position: absolute; left: 820px; top: 1030px; width: 190px; height: 84px; border-radius: 999px; background: #fff; border: 2px solid rgba(148,215,104,0.8);
+        display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 800; letter-spacing: -0.02em; box-shadow: 0 10px 24px rgba(47,110,28,0.14); }
+      #cnt span { position: absolute; }
+
+      /* outro (same as post 06) */
+      .lq { position: absolute; overflow: hidden;
+        background: linear-gradient(145deg, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.35) 46%, rgba(148,215,104,0.22) 100%);
+        border: 1.5px solid rgba(148,215,104,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 22px 48px rgba(47,110,28,0.16); }
+      .lq.green { background: linear-gradient(135deg, #94d768 0%, #4f9a2e 100%); border-color: rgba(255,255,255,0.7); color: #fff; text-shadow: 0 2px 6px rgba(20,60,10,0.35); }
+      #lg { position: absolute; left: 430px; top: 600px; width: 220px; height: 220px; border-radius: 50%; background: #fbfdf8; border: 3px solid var(--green); box-shadow: 0 18px 40px rgba(47,110,28,0.22); }
+      #lg svg { width: 100%; height: 100%; }
+      #hp { left: 230px; top: 900px; width: 620px; height: 130px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 66px; font-weight: 800; letter-spacing: -0.04em; }
+      #cta { left: 190px; top: 1080px; width: 700px; height: 104px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 40px; font-weight: 650; letter-spacing: -0.02em; }
+      #cta b { font-family: "JetBrains Mono"; font-weight: 800; color: #fff; background: var(--pop); border-radius: 14px; padding: 4px 16px; letter-spacing: 0.02em; }
+      #veil { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+      #stagez, #outz { position: absolute; inset: 0; transform-origin: 540px 960px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="13.2" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="13.2"></audio>
+
+      <div id="bg" class="scene clip" data-start="0" data-duration="13.2" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <div class="blob" id="b1"></div><div class="blob" id="b2"></div>
+      </div>
+
+      <div id="stage" class="scene clip" data-start="0" data-duration="11.7" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="stagez">
+          <div id="stagecard"></div>
+          <div id="demo" data-layout-allow-occlusion>zero javascript</div>
+          <div id="hook"><div id="ha">Typing effect.</div><div id="hb"><b>Zero</b> JavaScript.</div></div>
+          <div id="ask">That's it. 5 lines.<br>What would you<br>make it type?</div>
+          <div id="code">
+            <div class="k" id="k1"><i>width</i>: 15ch; <i>overflow</i>: hidden; <i>white-space</i>: nowrap;</div>
+            <div class="k" id="k2"><i>border-right</i>: .08em solid;</div>
+            <div class="k" id="k3"><span id="k3a"><i>animation</i>: blink 1s step-end infinite;</span><span id="k3b"><i>animation</i>: type 2s steps(15), blink 1s step-end infinite;</span></div>
+            <div class="k" id="k4"><i>@keyframes</i> blink { 50% { border-color: transparent } }</div>
+            <div class="k" id="k5"><i>@keyframes</i> type { from { width: 0 } }</div>
+          </div>
+          <div id="cnt"><span id="n1"><b>1</b>/3</span><span id="n2"><b>2</b>/3</span><span id="n3"><b>3</b>/3</span></div>
+        </div>
+      </div>
+
+      <div id="out" class="scene clip" data-start="11.6" data-duration="1.6" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="outz">
+          <div id="lg"><svg viewBox="0 0 256 256"><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+          <div class="lq green" id="hp">@alan.build</div>
+          <div class="lq" id="cta">Comment <b>REPO</b> for the code</div>
+        </div>
+        <div id="veil"></div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      // beats follow the Chris VO (audio/vo_chris/timing.json); each step lands 0.1 s before its line
+      const RW = 1.8, S = [2.2, 3.7, 5.6], PAY = 8.2, ASK = 10.1, OUT = 11.6, END = 13.2;
+      const INK = "#1f4d12", OFF = "rgba(31,77,18,0)", W = document.getElementById("demo").clientWidth; // shortcut: measured before webfonts load; fine with installed fonts
+
+      tl.fromTo("#b1", { x: 0, y: 0 }, { x: 160, y: -120, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b2", { x: 0, y: 0 }, { x: -200, y: -260, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#stagez", { scale: 1 }, { scale: 1.06, duration: OUT + 0.1, ease: "none" }, 0);
+      tl.fromTo("#outz", { scale: 1 }, { scale: 1.06, duration: END - OUT, ease: "none" }, OUT);
+
+      // blink = CSS "1s step-end infinite" with 50% transparent: on 0.5 s, off 0.5 s
+      const blink = (from, to) => { for (let t = from; t + 0.5 < to; t += 1) { tl.set("#demo", { borderRightColor: OFF }, t + 0.5); if (t + 1 < to) tl.set("#demo", { borderRightColor: INK }, t + 1); } };
+      // type = CSS "2s steps(15)" from width 0 (frame 0 runs it faster so the hook shows it whole)
+      const type = (at, dur) => tl.fromTo("#demo", { width: 0 }, { width: W, duration: dur, ease: "steps(15)", immediateRender: false }, at);
+
+      gsap.set(["#ask", "#code", "#cnt", ".k", "#cnt span", "#k3b"], { opacity: 0 });
+      gsap.set(".k", { height: 0 });
+
+      // ── frame 0: the finished effect already typing + blinking
+      gsap.set("#demo", { width: 0, borderRightColor: INK });
+      type(0, 1.5);
+      blink(0, RW);
+
+      // ── rewind: plain text, no cursor
+      tl.set("#demo", { borderRightColor: OFF, width: W }, RW);
+      tl.fromTo("#stagecard", { scale: 1 }, { scale: 0.96, duration: 0.18, ease: "power2.in", yoyo: true, repeat: 1, immediateRender: false }, RW);
+      tl.to("#hb", { opacity: 0, filter: "blur(12px)", duration: 0.25, ease: "power2.in" }, S[0] - 0.3);
+      tl.to("#ha", { y: 70, duration: 0.4, ease: "power3.inOut" }, S[0] - 0.3);
+      tl.fromTo(["#code", "#cnt"], { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "expo.out", immediateRender: false }, S[0] - 0.1);
+
+      const line = (id, at) => tl.fromTo(id, { opacity: 0, height: 0, x: -24, backgroundColor: "rgba(148,215,104,0)" }, { opacity: 1, height: 58, x: 0, backgroundColor: "rgba(148,215,104,0.32)", duration: 0.25, ease: "expo.out", immediateRender: false }, at);
+      const unhl = (ids, at) => tl.to(ids, { backgroundColor: "rgba(148,215,104,0)", duration: 0.2 }, at);
+      const count = (n, at) => { if (n > 1) tl.to("#n" + (n - 1), { opacity: 0, duration: 0.1 }, at); tl.fromTo("#n" + n, { opacity: 0, yPercent: 60 }, { opacity: 1, yPercent: 0, duration: 0.3, ease: "back.out(2)", immediateRender: false }, at); };
+      const bump = (at) => tl.fromTo("#stagecard", { scale: 1.04 }, { scale: 1, duration: 0.4, ease: "back.out(2)", immediateRender: false }, at);
+
+      // 1: the border is the cursor (static)
+      line("#k2", S[0]); count(1, S[0]); bump(S[0]);
+      tl.set("#demo", { borderRightColor: INK }, S[0]);
+      // 2: blink
+      unhl("#k2", S[1]); line("#k3", S[1]); line("#k4", S[1]); count(2, S[1]); bump(S[1]);
+      blink(S[1], S[2]);
+      tl.set("#demo", { borderRightColor: INK }, S[2]);
+      // 3: type (width + steps), blink keeps going
+      unhl(["#k3", "#k4"], S[2]); line("#k1", S[2]); line("#k5", S[2]); count(3, S[2]); bump(S[2]);
+      tl.to("#k3a", { opacity: 0, duration: 0.15 }, S[2]);
+      tl.to("#k3b", { opacity: 1, duration: 0.15 }, S[2]);
+      tl.to("#k3", { backgroundColor: "rgba(148,215,104,0.32)", duration: 0.2 }, S[2]);
+      type(S[2] + 0.2, 2);
+      blink(S[2] + 0.2, OUT);
+
+      // ── payoff: all 5 lines lit, then the question
+      unhl(["#k1", "#k3", "#k5"], PAY);
+      tl.fromTo(".k", { backgroundColor: "rgba(148,215,104,0)" }, { backgroundColor: "rgba(148,215,104,0.32)", duration: 0.15, stagger: 0.08, yoyo: true, repeat: 1, immediateRender: false }, PAY + 0.2);
+      tl.to("#ha", { opacity: 0, filter: "blur(12px)", duration: 0.22, ease: "power2.in" }, ASK - 0.1);
+      tl.fromTo("#ask", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "expo.out", immediateRender: false }, ASK + 0.05);
+      tl.to("#stagez", { opacity: 0, filter: "blur(14px)", duration: 0.25, ease: "power2.in" }, OUT - 0.15);
+
+      // ── outro
+      tl.fromTo("#lg", { scale: 0.5, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, OUT + 0.04);
+      tl.fromTo("#hp", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.7)" }, OUT + 0.3);
+      tl.fromTo("#cta", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, OUT + 0.5);
+      tl.to("#veil", { opacity: 1, duration: 0.25, ease: "power1.inOut" }, END - 0.25);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
