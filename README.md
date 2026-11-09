@@ -14,6 +14,7 @@ real recorded sounds.
 | [`07-typing-cursor/`](07-typing-cursor) | "Typing effect. Zero JavaScript.": border cursor, blink, `steps()` typing in 5 lines of CSS | 13.2 s |
 | [`09-easing/`](09-easing) | "Same move. Only 1 feels expensive.": `linear` vs `ease-out` vs `cubic-bezier(.16, 1, .3, 1)`, same distance, same 0.8 s | 14.0 s |
 | [`10-glass-tabs/`](10-glass-tabs) | "Liquid glass tabs. 8 lines + 1 lens.": a liquid-glass pill with real refraction (SVG displacement map in `backdrop-filter`) gliding between four tabs, the rule built one line at a time | 15.3 s |
+| [`11-glass-switch/`](11-glass-switch) | "Liquid glass switch. 5 lines + 1 lens.": a toggle whose knob, while held, grows, goes clear and bends what is behind it (SVG displacement map in `backdrop-filter`); copyable demo in `switch.html` | 16.0 s |
 
 ## Render one
 
