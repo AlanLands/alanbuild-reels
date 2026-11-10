@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leafy login: before and after</title>
+<style>
+  /* BEFORE: the 2/10 screen from the reel (Leafy is a made-up app) */
+  * { box-sizing: border-box; margin: 0; }
+  body { font: 600 15px system-ui, sans-serif; background: #16330d; color: #2b2f29; display: grid; justify-items: center; gap: 12px; padding: 16px; }
+  .phone { width: 375px; min-height: 700px; background: #e9ebe8; overflow: hidden; position: relative; }
+  header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; background: #f6f7f5; }
+  .logo { width: 26px; height: 26px; border-radius: 8px 8px 8px 2px; background: currentColor; margin-right: auto; }
+  .signup { background: #3ecf6a; color: #fff; padding: 6px 12px; border-radius: 7px; text-decoration: none; }
+  nav { display: flex; justify-content: space-around; padding: 8px; background: #f6f7f5; font-size: 13px; }
+  form { background: #fff; margin-top: 12px; padding: 24px 26px; display: grid; gap: 8px; text-align: center; }
+  h1 { font-size: 24px; margin-bottom: 14px; } h1 b { display: none; }
+  input, button { font: inherit; width: 100%; padding: 10px; border: 2px solid #d5d8d2; border-radius: 4px; background: #fff; color: inherit; }
+  button { padding: 5px; border-color: #4a4f47; border-radius: 6px; margin-top: 8px; }
+  .more { display: grid; gap: 10px; margin-top: 14px; font-size: 14px; } .more a { color: inherit; }
+  footer { margin-top: 18px; padding: 28px 34px; background: #dfe2dd; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; font-size: 13px; }
+  .plant { display: none; }
+
+  /* AFTER: the fixes from the reel, in the order they are made */
+  .after nav, .after .signup { display: none; }                                        /* lose the tabs and the second sign up */
+  .after .phone { background: #10260a linear-gradient(160deg, #2f6d1766, #0000 60%); color: #fff; }   /* darker, faded background */
+  .after header, .after form { background: none; }
+  .after h1 { font-size: 0; } .after h1 b { display: block; font-size: 46px; font-weight: 900; letter-spacing: .04em; }   /* full logo */
+  .after form { gap: 12px; }                                                           /* even spacing */
+  .after input, .after button { padding: 14px 18px; border-radius: 12px; margin: 0; }  /* button matches the inputs, padding */
+  .after input { background: #ffffff12; border-color: #ffffff4d; } .after input::placeholder { color: #fff9; }
+  .after button { background: #fff; color: #10260a; border-color: #fff; }
+  .after .more { display: flex; justify-content: center; gap: 14px; margin-top: 4px; } /* three actions in one row */
+  .after .more .or { display: none; }
+  .after footer { display: none; }                                                     /* footer below the fold */
+  .after .plant { display: block; position: absolute; right: 0; bottom: 0; width: 200px; }   /* too empty: a plant */
+  .after .phone::after { content: ""; position: absolute; inset: 8px; border: 2px dashed #fff5; border-radius: 6px; pointer-events: none; }   /* dashed border */
+  :focus-visible { outline: 3px solid #94d768; outline-offset: 2px; }
+  label.sw { color: #f5faf1; }
+</style>
+<body class="after">
+  <label class="sw"><input type="checkbox" style="width:auto" onchange="document.body.classList.toggle('after', !this.checked)"> show the before</label>
+  <div class="phone">
+    <header><span class="logo"></span><a class="signup" href="#">Sign Up</a><span aria-hidden="true">⌕</span></header>
+    <nav><span>Discover</span><span>Shop</span><span>Create</span><span>Coins</span></nav>
+    <form onsubmit="return false">
+      <h1>Log in to Leafy<b>LEAFY</b></h1>
+      <input type="text" placeholder="Email or phone" aria-label="Email or phone" autocomplete="username">
+      <input type="password" placeholder="Password" aria-label="Password" autocomplete="current-password">
+      <button>Log in</button>
+      <div class="more"><a href="#">Sign up</a><span class="or">or log in with</span><a href="#">Another device</a><a href="#">Need help?</a></div>
+    </form>
+    <footer><span>About Us</span><span>Parents</span><span>Terms</span><span>Jobs</span><span>Gift Cards</span><span>Privacy</span><span>Blog</span><span>Help</span><span>Access</span></footer>
+    <svg class="plant" viewBox="0 0 270 370" aria-hidden="true"><path d="M135 250C130 180 120 120 135 40" stroke="#4f9a2e" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M133 170C70 170 30 130 24 78 84 76 128 110 133 170Z" fill="#94d768"/><path d="M135 130C190 128 232 92 240 40 182 42 140 76 135 130Z" fill="#6dbb45"/><path d="M134 80C104 66 92 38 96 8 126 20 140 48 134 80Z" fill="#b5e892"/><path d="M52 236H218L200 370H70Z" fill="#ff5a0a"/><rect x="40" y="214" width="190" height="34" rx="12" fill="#ff7a33"/><circle cx="108" cy="292" r="9" fill="#16330d"/><circle cx="162" cy="292" r="9" fill="#16330d"/><path d="M108 318Q135 344 162 318" stroke="#16330d" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
+  </div>
+</body>
