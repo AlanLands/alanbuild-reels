@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* AlanBuild post 15 "6 glass sliders. Free." v2: ONE colour (teal), elegant thin-line tracks, the 4 CSS lines of the slider being named shown live. Real refraction = SVG displacement map in backdrop-filter; thumbs are real size, no CSS zoom. */
+      @font-face { font-family: "SF"; src: url('assets/fonts/SFNS.ttf') format('truetype'); font-weight: 1 1000; }
+      @font-face { font-family: "SF Mono"; src: url('assets/fonts/SFNSMono.ttf') format('truetype'); font-weight: 1 1000; }
+      :root { --ink: #eafffb; --a: #7ff0e2; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #04191b; }
+      #root { position: relative; width: 100%; height: 100%; font-family: "SF"; color: var(--ink); background: linear-gradient(180deg, #031416 0%, #06292b 45%, #04191b 100%); }
+      .scene { position: absolute; inset: 0; }
+      #glow { position: absolute; width: 1100px; height: 1100px; left: -10px; top: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(46,170,160,0.40) 0%, rgba(46,170,160,0) 66%); }
+
+      /* everything sits inside the IG text box x 135-945 / y 420-1470 */
+      #title { position: absolute; left: 135px; width: 810px; top: 424px; text-align: center; }
+      #ta { font-size: 70px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; color: #fff; }
+      #ta b { color: var(--a); }
+      #tb { margin-top: 6px; font-size: 30px; font-weight: 600; letter-spacing: -0.01em; color: rgba(234,255,251,0.62); }
+      #tb { position: relative; height: 40px; }
+      .sl { position: absolute; left: 0; right: 0; top: 0; opacity: 0; white-space: nowrap; }
+      #s0 { opacity: 1; }
+      #tb b { font-weight: 700; color: var(--a); border: 1.5px solid rgba(127,240,226,0.7); border-radius: 10px; padding: 0 11px; }
+
+      .row { position: absolute; left: 135px; width: 810px; height: 106px; border-radius: 36px; background: rgba(255,255,255,0.04); border: 1.5px solid rgba(180,255,245,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08); }
+      .lb { position: absolute; left: 22px; top: 0; height: 106px; line-height: 106px; font-size: 22px; font-weight: 700; letter-spacing: 0.08em; color: rgba(234,255,251,0.74); white-space: nowrap; }
+      .lb i { font-style: normal; display: inline-block; width: 34px; height: 34px; line-height: 34px; text-align: center; margin-right: 14px; border-radius: 17px; background: rgba(255,255,255,0.10); letter-spacing: 0; font-size: 21px; }
+      .trk, .fill { position: absolute; left: 268px; top: 33px; height: 40px; border-radius: 20px; }
+      .trk { width: 518px; background-color: #05282a; box-shadow: inset 0 3px 8px #0008;
+        background-image: repeating-linear-gradient(90deg, rgba(127,240,226,0.62) 0 4px, transparent 4px 14px); }
+      .fill { width: 36px; background-color: #14786f; background-image: repeating-linear-gradient(90deg, rgba(190,255,248,0.95) 0 4px, transparent 4px 14px); }
+      .thumb { position: absolute; left: 268px; top: 17px; width: 72px; height: 72px; border-radius: 50%; box-shadow: 0 8px 20px #0007; }
+      .thumb > div { position: absolute; inset: 0; border-radius: 50%; }
+      .tl { backdrop-filter: url(#lens); -webkit-backdrop-filter: url(#lens); }
+      .tb { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(255,255,255,0.20); }
+      .tr { box-shadow: inset 0 2px 3px rgba(255,255,255,0.9), inset 0 -2px 3px rgba(255,255,255,0.22); }
+      .t1 .tf, .t3 .tf { background: rgba(255,255,255,0.10); }
+      .t2 .tf { background: rgba(0,20,22,0.30); }
+      .t2 { box-shadow: 0 0 0 2px #7ff0e2, 0 0 20px 3px rgba(127,240,226,0.7), 0 8px 20px #0007; }
+      .t5 .tl { backdrop-filter: url(#deep); -webkit-backdrop-filter: url(#deep); }
+      .t5 .tr { box-shadow: inset 0 2px 6px #fff, 0 0 0 1.5px rgba(255,255,255,0.5); }
+      .thumb.t6 { top: 31px; width: 44px; height: 44px; }
+      .t6 .tl { backdrop-filter: url(#lensT); -webkit-backdrop-filter: url(#lensT); }
+      .row.on { background: rgba(127,240,226,0.09); border-color: rgba(127,240,226,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 0 30px rgba(127,240,226,0.20); }
+      .row.on .lb { color: #fff; }
+      .row.on .lb i { background: var(--a); color: #04302c; }
+
+      /* code card: the 4 lines of the slider being named */
+      #code { position: absolute; left: 135px; top: 1236px; width: 810px; height: 234px; border-radius: 32px; background: rgba(2,18,20,0.72); border: 1.5px solid rgba(127,240,226,0.38); box-shadow: 0 22px 48px rgba(0,0,0,0.35); padding: 12px 26px; }
+      .hd { position: relative; line-height: 36px; font-family: "SF Mono"; font-size: 28px; font-weight: 700; color: var(--a); white-space: pre; }
+      .hd s { position: absolute; right: 0; top: 4px; text-decoration: none; font-family: "SF"; font-size: 24px; font-weight: 700; letter-spacing: 0.04em; color: var(--a); border: 1.5px solid rgba(127,240,226,0.7); border-radius: 10px; padding: 0 12px; line-height: 30px; }
+      .cb { position: absolute; left: 26px; right: 26px; top: 50px; }
+      .k { line-height: 35px; font-family: "SF Mono"; font-size: 28px; font-weight: 700; color: #ffffff; white-space: pre; border-radius: 8px; }
+      .k i { font-style: normal; color: var(--a); }
+      .k.g { background: rgba(127,240,226,0.14); box-shadow: inset 3px 0 0 var(--a); }
+      .cl { position: absolute; left: 26px; top: 190px; line-height: 38px; font-family: "SF Mono"; font-size: 29px; font-weight: 700; color: var(--a); }
+
+      /* outro: AB end card */
+      .lq { position: absolute; overflow: hidden; background: linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%); border: 1.5px solid rgba(180,255,245,0.45); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.35), 0 22px 48px rgba(0,0,0,0.35); color: #fff; }
+      .lq.teal { background: linear-gradient(135deg, #7ff0e2 0%, #2aa89c 100%); border-color: rgba(255,255,255,0.7); color: #04302c; }
+      #lg { position: absolute; left: 430px; top: 600px; width: 220px; height: 220px; border-radius: 50%; background: #fbfdf8; border: 3px solid var(--a); box-shadow: 0 18px 40px rgba(0,0,0,0.4); }
+      #lg svg { width: 100%; height: 100%; }
+      #hp { left: 230px; top: 900px; width: 620px; height: 130px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 66px; font-weight: 800; letter-spacing: -0.04em; }
+      #cta { left: 150px; top: 1080px; width: 780px; height: 104px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 40px; font-weight: 650; letter-spacing: -0.02em; }
+      #cta b { font-family: "SF Mono"; font-weight: 800; color: #04302c; background: var(--a); border-radius: 14px; padding: 4px 16px; letter-spacing: 0.02em; }
+      #veil { position: absolute; inset: 0; background: linear-gradient(180deg, #031416 0%, #06292b 45%, #04191b 100%); opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <filter id="lens" x="0" y="0" width="72" height="72" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feImage href="data:image/png;base64,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" x="0" y="0" width="72" height="72" result="map" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="34" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="deep" x="0" y="0" width="72" height="72" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feImage href="data:image/png;base64,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" x="0" y="0" width="72" height="72" result="map" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="52" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+      <filter id="lensT" x="0" y="0" width="44" height="44" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feImage href="data:image/png;base64,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" x="0" y="0" width="44" height="44" result="map" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="21" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12.6" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="12.6"></audio>
+      <div id="bg" class="scene clip" data-start="0" data-duration="12.6" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow><div id="glow"></div></div>
+      <div id="stage" class="scene clip" data-start="0" data-duration="10.1" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="title"><div id="ta">6 glass sliders. <b>Free.</b></div><div id="tb"><span class="sl" id="s0">copy the code · <b>4 lines</b> each</span><span class="sl" id="s1">glides, goes clear, shiny edge</span><span class="sl" id="s2">a neon ring</span><span class="sl" id="s3">springy overshoot</span><span class="sl" id="s4">blur, no lens</span><span class="sl" id="s5">a stronger bend</span><span class="sl" id="s6">just 20px</span><span class="sl" id="s7"><b>1 lens</b> shared by all</span></div></div>
+          <div class="row" id="r1"><span class="lb"><i>1</i>CLEAR GLASS</span><div class="trk"></div><div class="fill"></div><div class="thumb t1"><div class="tf"></div><div class="tl"></div><div class="tr"></div></div></div>
+          <div class="row" id="r2"><span class="lb"><i>2</i>NEON</span><div class="trk"></div><div class="fill"></div><div class="thumb t2"><div class="tf"></div><div class="tl"></div><div class="tr"></div></div></div>
+          <div class="row" id="r3"><span class="lb"><i>3</i>BOUNCY</span><div class="trk"></div><div class="fill"></div><div class="thumb t3"><div class="tf"></div><div class="tl"></div><div class="tr"></div></div></div>
+          <div class="row" id="r4"><span class="lb"><i>4</i>FROSTED</span><div class="trk"></div><div class="fill"></div><div class="thumb t4"><div class="tf"></div><div class="tb"></div><div class="tr"></div></div></div>
+          <div class="row" id="r5"><span class="lb"><i>5</i>DEEP LENS</span><div class="trk"></div><div class="fill"></div><div class="thumb t5"><div class="tf"></div><div class="tl"></div><div class="tr"></div></div></div>
+          <div class="row" id="r6"><span class="lb"><i>6</i>TINY</span><div class="trk"></div><div class="fill"></div><div class="thumb t6"><div class="tf"></div><div class="tl"></div><div class="tr"></div></div></div>
+        <div id="code">
+          <div class="hd">.thumb {<s>4 lines</s></div>
+          <div class="hd" id="hd2" style="position:absolute;left:26px;right:26px;top:12px;opacity:0">&lt;svg&gt; once<s>+ 1 lens</s></div>
+            <div class="cb" id="cb1"><div class="k"><i>  transition</i>: .5s ease-out;</div><div class="k"><i>  background</i>: #fff3;</div><div class="k"><i>  box-shadow</i>: inset 0 1px 2px #fff;</div><div class="k g"><i>  backdrop-filter</i>: url(#lens);</div></div>
+            <div class="cb" id="cb2"><div class="k"><i>  transition</i>: .5s ease-out;</div><div class="k"><i>  background</i>: #0003;</div><div class="k"><i>  box-shadow</i>: 0 0 20px #3ff3e0;</div><div class="k g"><i>  backdrop-filter</i>: url(#lens);</div></div>
+            <div class="cb" id="cb3"><div class="k"><i>  transition</i>: .6s cubic-bezier(.3,1.8,.5,1);</div><div class="k"><i>  background</i>: #fff3;</div><div class="k"><i>  box-shadow</i>: inset 0 1px 2px #fff;</div><div class="k g"><i>  backdrop-filter</i>: url(#lens);</div></div>
+            <div class="cb" id="cb4"><div class="k"><i>  transition</i>: .5s ease-out;</div><div class="k"><i>  background</i>: #fff4;</div><div class="k"><i>  box-shadow</i>: inset 0 1px 2px #fff;</div><div class="k g"><i>  backdrop-filter</i>: blur(10px);</div></div>
+            <div class="cb" id="cb5"><div class="k"><i>  transition</i>: .5s ease-out;</div><div class="k"><i>  background</i>: #fff1;</div><div class="k"><i>  box-shadow</i>: inset 0 2px 6px #fff;</div><div class="k g"><i>  backdrop-filter</i>: url(#deep);</div></div>
+            <div class="cb" id="cb6"><div class="k"><i>  width</i>: 20px; height: 20px;</div><div class="k"><i>  transition</i>: .5s ease-out;</div><div class="k"><i>  background</i>: #fff3;</div><div class="k g"><i>  backdrop-filter</i>: url(#lens);</div></div>
+            <div class="cb" id="cb7"><div class="k">&lt;filter id="lens"&gt;</div><div class="k g">  &lt;feImage href="lens.png"/&gt;</div><div class="k">  &lt;feDisplacementMap scale="34"/&gt;</div><div class="k">&lt;/filter&gt;</div></div>
+          <div class="cl">}</div>
+        </div>
+      </div>
+      <div id="out" class="scene clip" data-start="9.7" data-duration="2.9" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="veil"></div>
+        <div id="lg"><svg viewBox="0 0 256 256"><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+        <div class="lq teal" id="hp">@alan.build</div>
+        <div class="lq" id="cta">Comment <b>SLIDER</b> + a number</div>
+      </div>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const T = { n1: 2.0, n2: 3.0, n3: 3.9, n4: 4.8, n5: 5.7, n6: 6.7, pay: 7.7 }, OUT = 9.7, TX = 446, TXT = 474;
+      const ROW0 = 540, PITCH = 116;
+      gsap.set("#cb7", { opacity: 0 }); gsap.set(".sl:not(#s0)", { opacity: 0 });
+      for (let i = 1; i <= 6; i++) { gsap.set("#r" + i, { top: ROW0 + (i - 1) * PITCH }); gsap.set("#cb" + i, { opacity: i === 1 ? 1 : 0 }); gsap.set("#r" + i + " .fill", { width: i === 6 ? 22 : 36 }); }
+      const mv = (i, t, f, d, ease) => {  // thumb + fill move together
+        const x = f * (i === 6 ? TXT : TX);
+        tl.to("#r" + i + " .thumb", { x, duration: d, ease }, t);
+        tl.to("#r" + i + " .fill", { width: x + (i === 6 ? 22 : 36), duration: d, ease }, t);
+      };
+      // hook (0-2 s): every thumb sweeps so the bend is on screen from the first frame
+      for (let i = 1; i <= 6; i++) { const s = (i - 1) * 0.07; mv(i, s, 0.62, 0.9, "power2.inOut"); mv(i, 1.4 + s * 0.4, 0, 0.5, "power2.inOut"); }
+      // 1..6 named: thumb slides, row lights up and stays lit, its 4 lines show in the code card
+      ["n1", "n2", "n3", "n4", "n5", "n6"].forEach((k, j) => {
+        const i = j + 1, t = T[k] - 0.05;
+        tl.to("#r" + i, { backgroundColor: "rgba(127,240,226,0.09)", borderColor: "rgba(127,240,226,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.16), 0 0 30px rgba(127,240,226,0.20)", duration: 0.2 }, t);
+        tl.to("#r" + i + " .lb", { color: "#ffffff", duration: 0.2 }, t);
+        tl.to("#r" + i + " .lb i", { backgroundColor: "#7ff0e2", color: "#04302c", duration: 0.2 }, t);
+        if (i > 1) { tl.to("#cb" + (i - 1), { opacity: 0, duration: 0.15 }, t); tl.to("#cb" + i, { opacity: 1, duration: 0.2 }, t + 0.1); }
+        tl.to(i === 1 ? "#s0" : "#s" + (i - 1), { opacity: 0, duration: 0.12 }, t); tl.to("#s" + i, { opacity: 1, duration: 0.18 }, t + 0.08);
+        mv(i, t, 1, 0.7, i === 3 ? "back.out(2.4)" : "power3.out");
+      });
+      // payoff: the code card shows the one shared lens filter while all six sweep together
+      tl.to("#cb6", { opacity: 0, duration: 0.15 }, T.pay); tl.to("#cb7", { opacity: 1, duration: 0.2 }, T.pay + 0.1);
+      tl.to("#s6", { opacity: 0, duration: 0.12 }, T.pay); tl.to("#s7", { opacity: 1, duration: 0.18 }, T.pay + 0.08);
+      tl.to(".cl", { opacity: 0, duration: 0.15 }, T.pay);
+      tl.to("#code > .hd:first-child", { opacity: 0, duration: 0.15 }, T.pay); tl.to("#hd2", { opacity: 1, duration: 0.2 }, T.pay + 0.1);
+      for (let i = 1; i <= 6; i++) { const s = (i - 1) * 0.06; mv(i, T.pay + s, 0.12, 0.4, "power2.inOut"); mv(i, T.pay + 0.55 + s, 0.88, 0.8, "power2.inOut"); mv(i, T.pay + 1.45 + s, 0.5, 0.4, "power2.inOut"); }
+      // out: dark veil, then the end card
+      tl.fromTo("#veil", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, OUT);
+      tl.fromTo("#lg", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, OUT + 0.05);
+      tl.fromTo("#hp", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.7)" }, OUT + 0.2);
+      tl.fromTo("#cta", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, OUT + 0.4);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

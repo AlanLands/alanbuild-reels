@@ -1,0 +1,115 @@
+<!doctype html>
+<!-- 6 liquid glass sliders from the reel, as one plain page you can copy. Open it in Chrome or Edge (backdrop-filter: url() is
+     Chromium-only today; Safari and Firefox show the plain translucent thumb). Drag any thumb. Each slider is 4 lines of CSS on .thumb;
+     the glass ones share the lens filters below (an SVG displacement map: red = x shift, green = y shift, flat grey in the middle,
+     pulling inward at the rim). Filter regions are the thumb size in px, so keep the map and the thumb the same size.
+     The reel draws everything at 2x so it reads on a phone; this page is the real size. -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>6 liquid glass sliders</title>
+<style>
+  body { margin: 0; min-height: 100vh; background: linear-gradient(180deg, #031416, #06292b 50%, #04191b); color: #eafffb; font: 15px system-ui; display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
+  main { width: min(560px, 100%); display: grid; gap: 14px; }
+  h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -.02em; } h1 b { color: #7ff0e2; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; align-items: center; padding: 14px 18px; border-radius: 18px; background: #ffffff0a; border: 1px solid #b4fff524; }
+  h2 { margin: 0; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: #eafffbbd; grid-column: 1 / -1; }
+  h2 i { font-style: normal; display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; margin-right: 8px; border-radius: 10px; background: #7ff0e2; color: #04302c; letter-spacing: 0; }
+  pre { margin: 0; font: 12px/1.45 ui-monospace, Menlo, monospace; color: #eafffb; white-space: pre-wrap; }
+  /* the track: thin bright lines so the lens has something to bend */
+  .slider { position: relative; height: 20px; border-radius: 10px; background-color: #05282a; touch-action: none; cursor: pointer;
+    background-image: repeating-linear-gradient(90deg, #7ff0e29e 0 2px, transparent 2px 7px); box-shadow: inset 0 1.5px 4px #0008; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 10px; background-color: #14786f;
+    background-image: repeating-linear-gradient(90deg, #befff8f2 0 2px, transparent 2px 7px); }
+  /* the 4 lines of each slider live on .thumb; everything else is layout */
+  .thumb { position: absolute; top: -8px; width: 36px; height: 36px; border-radius: 50%; margin-left: -18px; box-shadow: 0 4px 10px #0007, inset 0 -1px 2px #ffffff40; }
+  .slider.drag .thumb { transition: none !important; }
+  .glass .thumb  { transition: .5s ease-out; background: #fff3; box-shadow: inset 0 1px 2px #fff; backdrop-filter: url(#lens); }
+  .neon .thumb   { transition: .5s ease-out; background: #0003; box-shadow: 0 0 20px #3ff3e0; backdrop-filter: url(#lens); outline: 1.5px solid #7ff0e2; }
+  .bouncy .thumb { transition: .6s cubic-bezier(.3,1.8,.5,1); background: #fff3; box-shadow: inset 0 1px 2px #fff; backdrop-filter: url(#lens); }
+  .frost .thumb  { transition: .5s ease-out; background: #fff4; box-shadow: inset 0 1px 2px #fff; backdrop-filter: blur(10px); }
+  .deep .thumb   { transition: .5s ease-out; background: #fff1; box-shadow: inset 0 2px 6px #fff; backdrop-filter: url(#deep); }
+  .tiny .thumb   { width: 20px; height: 20px; margin-left: -10px; top: 0; transition: .5s ease-out; background: #fff3; backdrop-filter: url(#tiny); }
+</style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="lens" x="0" y="0" width="36" height="36" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feImage href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAIAAABuYg/PAAAEwUlEQVR42qWXvbIcNRCFv25Js69gh7yAHZKYkMRkdmRHdoLJuAkmgSpX2REkEEICEUQQkpCSkPICPMaOflpNIMl3L7bxXjOlmq3a3dI3pyWd0yPPnj3jvOvGF2Qhs+4+7zdfnDkB8a3/uPUZWcmQK3L1JweHvz8nQ+7c/vp/wO58ShFynbO642P6dYkgAgKCC39eUJwPvr0m7O7HFCUX3Okd73TDO94veYMkiioSUEUUF37/hNL56PvzYPceUSowGd1oDTOsTbA7AiKoEpQQiYEa0YAEUDr88oj7P74N9uABZQmyRmvUSqu0ijXM6H0qUyEoIRAjlkiJlggRjVPiTw94+PObYY/uTZLZxNSyRqW1S3HClBUjHukJ22gbaaMmQkQCLvxwj8e/vg728V3qVVLJ5ELOlEItE+YLJkpQPELEN3yjH2gb9UA84X13lye/vQLTAtD7JOU8RxmwilXM8JMyikJAEqQFO9AK5UBMaJzr929ln96hZLrTjFqnoH0nZ/KQdUq6uhulQIKKV6zSGqWRN2JCAy58c4eLP05gMgrYaY0yCpgvC1gr3fDTE/bySHeCIQZGN8yoRm5sbRVT8eUFCnx2CzJ9x3bqkXIkH8k7ZadkasHaFdLpJaBOaKTCltl2DjuHI9uRdCTs6A6Zr24tZZpx6E5r1KGsUAqlUitmbzc9gWAkMKiwOZuTjNjQiMhcuQiQcbCOGXXsw0qt1Ib1c01WIHRSI8EGyUmdYISG6NogX9ygZtzn7mhGG2fZMHtj9V7Pc4KRhChEiE40NEz/fH6DKBlkwnrHbCLN6NchXa6fTVLo6PBMmYhIXmGxeL3Tne5ck3XJ077utpJhlFHySTj53CmD9G4wcdRQQfr065fzT2Unx2fm05Vvzr9ePuAymtNHjp6vJOHIp2FFItcWN5ej0/2V/JvKfJJU0bCGvCNsLrzNccmTocwRQQUNM5+iE0DHYTy7kmOL2To81hbPF+LFTcjIjmZiJhZiJTaSEQy5jrQRT3XAKq3QMj3jO2S+vLkcRCAIIZKM1NmcBAlMaHKWuOHj04CWfVu74qsR6BlxVImVlNhsmlsFAwcLb+FNTXUmRimUPPuJkewqy/W/vg0Z3Qk76ch25HDksLPtbJlUCA3prz93L7uVWiiZspN38pFypB6xnb5D5untkzzzgjhBiIEtsTUOyx67gdESFnBdXeLKMx8OV6mFUsiZvE9xM2/9xEHGx7cf8MnvKEQlVQ6VMnZUxQ9QISGLN8LQF8nqSbiv1B0NUu8IXHz4Sg/SC3RUiIEUOZS1nQ74BhsSIdIV09mtjIaltZl/eTVIk2TgqL6uu/r+Ix79clnMFNkybaNv+IYniHjEFVE6eJ9txMjbXMhltkajqR0FfHL/DX3jj/d58NPiKSmSIi1hiZ7wSA90pct0Cuu0lbd15W1rWJ+kxw//syP++SH3fkAchaDEQAq0iAUsEkYNBRZsiBvImYIdBxEePj6j1//1MXe/g444KqgSlRYIOpNweOY0pz71jSV0B0GV+0/Ofov57QnAnW+mxOGcIleScObfCL8VgSJ8ePFO72d/XADc+orRHL1qW6cBK8r7T//3m+dfa4obz5fL+czVEcTvfXmuU/8DZ2yhdoD3WUQAAAAASUVORK5CYII=" x="0" y="0" width="36" height="36" result="map" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="17" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="deep" x="0" y="0" width="36" height="36" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feImage href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACQAAAAkCAIAAABuYg/PAAAD+UlEQVR42qWXu24UWRCGv6qehzApD2BCEpMSgLSBiWxpJVtagYgwEgIhgWQJEoggXJLdiI0gJCAmIeUBeAzsvpwqgnPt6bF3dmmVjnqmj/rvvy5/1ZHT01O2u3ae0Qu90JPN6Z0rL7d8Aat/3bH7mF4YlHNDBMn/ezTn+1MGo3euvf4FsL0HDMoQUEEMAZHZhgjmYI45Xx8yGDfe/kewW3cZO4YJVUTWMZZXRDUnGJ/vMwZuv9uwTZd/7R/RBXRCRmSAHs6znS2sPOrxAR+xiRD4cLQF2MEBOqEjMlQkjzA/8DP4UU3izzOkxRuwEZt4f3CpG4/2mUZCaFzn4Pjc4hVDWIxsrUv/2uf44yawu7cII6YJJgXfMccNM9xxW4ApGldtgElZE4w/b3Hv0wKsG/HCyQHcMMcMC1jGSykPCCKooIoq2iW8GBmXym+d2YM9pqH5Ls8w1oCFxMy9+rDApDVTbP35Zo+TLw2YDnlTcaBhRgh5LeQsMROpb+86tKNTtEMU0ZkzzRpmj3cJQ4NEQrKMV6w4U0gO7JSuS1bIJTwq3qtdnnxjBUhfvwWvvg5rSGEzswKWrPFkcaZbZqYDJnMtKLQWzNxqzNaYdW3YtOpOJAesnu1g5zAHi3ihuDEHzwKWs1EFF7SjC5lQobUQOXde7LCSflYcxY3rCZmx3Rs3Cp0TFDVU0ZAcqLnM10p2JX2l1T7wtgByabcV7Y444qijlvIl1TUb5NudFf1lQr6+Nhviq8SR0ABwWYu4EKx5X7Myc0MFt+anXw7mC4zGFSXa8cY94VXGWVbKTS3Y+WtX3s8etELeaoQq4oji81Rqy78URu0PXpEkgpXPEWqaic4UNqa1d7hkvFj7YSaeEa8krc+b0erlFZ5+b5iVxqGpaErBhg4NuBIEqIXRSkwo/JrUjQSeX2UF2DATobZxrEmRaWp4Ri38paSZzdwYw5Hkyvv1Gko6tElnRWuCLJU6WCW35qoE9voaD78mckLVvRKqorAhi2zpHa1et2HzEjBBlUfXm35mAxYS8bYxlrDNevFag42hagNWMi5GpJt36rc3uP85O9MRQUE1B6+rLThaO6HMurljlgqjfPHJzcUMEsba+GlqoE4ZUgNW5K4AxJuaFKUHdZumq3e3OfpQ26OUpiV1beV1Nn7lNYWqicIfv10wN/59h4P3Db8yRTGT8w1K3ahijXfH74eXTsT/HGITNqbZNk7EkidimU/EnidizxNxnKN1RCcOD7eY9T8eEwI24WPF22bWlwEZ0YkucOd461PMp3sAe29qKl/YPmTuOuXmyf86n305Adh9Vdu0+6IXleYgXH/0yyfPb0/yMffF5oPF1efbHnN/Al6icQtRmujaAAAAAElFTkSuQmCC" x="0" y="0" width="36" height="36" result="map" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="26" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+    <filter id="tiny" x="0" y="0" width="20" height="20" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feImage href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAIAAAAC64paAAACJ0lEQVR42n2Uy1EcMRBAn0aanRlMEJCAA8AR+Ax3KAJg7+bCBe52BBAAZzJwAM7EaEf/nvaBpVh+7uqLqvTUUvVrmaurK97FwQ+8wRs8eMUrhzfvd+HerI8u8Aa/gQUUAAMdf9Z45duvT+DjU2bL30ek0QrSUMGAtTiHXWEcD+fMwsnda/j0mBAQoWZypCRqZhE66C2rgWGkn7ADi+X2mLP7HdjOiJASIRBmUqSmF3gckYn8hbiHHRG7U/niiMe/5EoIbDaEmRhpdXvt3mJ6dKIG4j7DHl3PzyPWv3GA8TQhZubAHIiRWrZnGzALfWVqtEaoTBk3oBbA/Thg4ymNVIiJGCn1bUsMrAqTMimjsMoYx/UBzngWaEKupEptfBgG+saYGARX6CwKzngURJEFWRDls7CKrVjBFoxBweFfTKB7euUntMIC9cUfp35rgu23uXwCiyJ1m0+NcOrpwDmGFeNIb6j9B8VVqY2UyIlWWBoGuptDjGf1yOiZZqbAqjxbvUOWQgzEmeQpj6jn8hAHqMcZpp4vmVBpDZ1oPWpRUKFVYmSemTfEQKsYfTbs1zfOHxgse5H9SA3oRBqplgXqk7aRzUwI5MQirL/vuC0zdmG07A3kCRmRAbHUJzgTEiGSMiLY7vVU3Z1wfIsV+o7BkVcUR3muXBq5UBuy0FnOzt7N8/0ZwNFPrOIMttuaIEpbEEUN39f//Ul+rwEOrkF3fhLD18sPOv8PizRBfhM8PpEAAAAASUVORK5CYII=" x="0" y="0" width="20" height="20" result="map" />
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="10" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </svg>
+  <main>
+    <h1>6 liquid glass sliders. <b>Free.</b></h1>
+  <section class="row"><h2><i>1</i>Clear glass</h2>
+    <div class="slider glass" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  transition: .5s ease-out;
+  background: #fff3;
+  box-shadow: inset 0 1px 2px #fff;
+  backdrop-filter: url(#lens);
+}</pre></section>
+  <section class="row"><h2><i>2</i>Neon</h2>
+    <div class="slider neon" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  transition: .5s ease-out;
+  background: #0003;
+  box-shadow: 0 0 20px #3ff3e0;
+  backdrop-filter: url(#lens);
+}</pre></section>
+  <section class="row"><h2><i>3</i>Bouncy</h2>
+    <div class="slider bouncy" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  transition: .6s cubic-bezier(.3,1.8,.5,1);
+  background: #fff3;
+  box-shadow: inset 0 1px 2px #fff;
+  backdrop-filter: url(#lens);
+}</pre></section>
+  <section class="row"><h2><i>4</i>Frosted</h2>
+    <div class="slider frost" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  transition: .5s ease-out;
+  background: #fff4;
+  box-shadow: inset 0 1px 2px #fff;
+  backdrop-filter: blur(10px);
+}</pre></section>
+  <section class="row"><h2><i>5</i>Deep lens</h2>
+    <div class="slider deep" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  transition: .5s ease-out;
+  background: #fff1;
+  box-shadow: inset 0 2px 6px #fff;
+  backdrop-filter: url(#deep);
+}</pre></section>
+  <section class="row"><h2><i>6</i>Tiny</h2>
+    <div class="slider tiny" data-v="0.35"><div class="fill"></div><div class="thumb"></div></div>
+    <pre>.thumb {
+  width: 20px; height: 20px;
+  transition: .5s ease-out;
+  background: #fff3;
+  backdrop-filter: url(#lens);
+}</pre></section>
+  </main>
+<script>
+  // drag any slider: the thumb and the fill follow the pointer (the only JS on the page)
+  document.querySelectorAll(".slider").forEach(s => {
+    const t = s.querySelector(".thumb"), f = s.querySelector(".fill"), half = t.offsetWidth / 2;
+    const set = v => { v = Math.min(1, Math.max(0, v)); const x = half + v * (s.clientWidth - 2 * half); t.style.left = x + "px"; f.style.width = x + "px"; };
+    const at = e => set((e.clientX - s.getBoundingClientRect().left - half) / (s.clientWidth - 2 * half));
+    set(+s.dataset.v);
+    s.addEventListener("pointerdown", e => { s.setPointerCapture(e.pointerId); at(e); s.classList.add("drag"); });
+    s.addEventListener("pointermove", e => { if (s.classList.contains("drag")) at(e); });
+    s.addEventListener("pointerup", () => s.classList.remove("drag"));
+  });
+</script>
+</body>
+</html>
