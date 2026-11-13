@@ -16,6 +16,7 @@ real recorded sounds.
 | [`10-glass-tabs/`](10-glass-tabs) | "Liquid glass tabs. 8 lines + 1 lens.": a liquid-glass pill with real refraction (SVG displacement map in `backdrop-filter`) gliding between four tabs, the rule built one line at a time | 15.3 s |
 | [`11-glass-switch/`](11-glass-switch) | "Liquid glass switch. 5 lines + 1 lens.": a toggle whose knob, while held, grows, goes clear and bends what is behind it (SVG displacement map in `backdrop-filter`); copyable demo in `switch.html` | 16.0 s |
 | [`13-login-rating/`](13-login-rating) | "This login screen is a 2/10. Watch.": a made-up app's login screen redesigned live (dark background, full logo, even spacing, one row of links, a plant); the finished screen with a before switch is in `login.html` | 22.0 s |
+| [`15-glass-sliders/`](15-glass-sliders) | "6 glass sliders. Free.": six liquid-glass slider thumbs (clear, neon, bouncy, frosted, deep lens, tiny), 4 lines of CSS each plus one shared SVG lens; all six, draggable, in `sliders.html` | 12.6 s |
 
 ## Render one
 
