@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glass card: 3 lines of CSS + 1 lens</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; font: 600 16px system-ui, sans-serif; overflow: hidden;
+    background: repeating-linear-gradient(105deg, #ff5a0a 0 32px, #7a2cff 32px 64px, #2f6bff 64px 96px, #ff3d8b 96px 128px, #19b36b 128px 160px);
+    background-size: 331.3px 100%; animation: flow 6s linear infinite; }   /* 331.3 = 2 stripe periods (160 / sin 105deg) */
+  @keyframes flow { to { background-position: -331.3px 0; } }
+  @media (prefers-reduced-motion: reduce) { body { animation: none; } }
+  main { display: grid; gap: 9px; }
+
+  /* the whole effect: 3 lines + the #lens filter below */
+  .card {
+    background: #fff3;
+    box-shadow: inset 0 1px 2px #fff;
+    backdrop-filter: url(#lens);
+  }
+
+  /* layout only. The lens map is 345 x 80 with radius 20: for another size, make a new map with mkmap.py */
+  .card { width: 345px; height: 80px; border-radius: 20px; box-sizing: border-box; padding: 11px 22px; color: #fff; text-shadow: 0 1px 5px #0006; }
+  .card small { display: block; font-size: 16px; }
+  .card b { font-size: 36px; line-height: 38px; letter-spacing: -0.04em; }
+</style>
+</head>
+<body>
+<!-- Chrome and Edge only: other browsers ignore url() in backdrop-filter and show a plain see-through card -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="lens" x="0" y="0" width="345" height="80" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feImage href="data:image/png;base64,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" x="0" y="0" width="345" height="80" preserveAspectRatio="none" result="map" />
+    <feDisplacementMap in="SourceGraphic" in2="map" scale="55" xChannelSelector="R" yChannelSelector="G" />
+  </filter>
+</svg>
+<main>
+  <div class="card"><small>Visitors</small><b>8,214</b></div>
+  <div class="card"><small>Revenue</small><b>$12,480</b></div>
+  <div class="card"><small>Uptime</small><b>99.9%</b></div>
+</main>
+</body>
+</html>

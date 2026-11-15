@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* AlanBuild post 16 "Glass dashboard, 3 lines + 1 lens": a dashboard stat card that goes clear, gets a shiny edge and refracts the moving stripes under it (real SVG displacement map in backdrop-filter, no blur). Cards are real 345x80 px drawn 2x (no CSS zoom). Moves are GSAP (seek-safe). Built from post 14. */
+      @font-face { font-family: "SF"; src: url('assets/fonts/SFNS.ttf') format('truetype'); font-weight: 1 1000; }
+      @font-face { font-family: "SF Mono"; src: url('assets/fonts/SFNSMono.ttf') format('truetype'); font-weight: 1 1000; }
+      :root { --paper: #f5faf1; --ink: #1f4d12; --accent: #4f9a2e; --green: #94d768; --pop: #ff5a0a; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; font-family: "SF"; color: var(--ink); background: var(--paper); }
+      .scene { position: absolute; inset: 0; }
+      .blob { position: absolute; border-radius: 50%; }
+      #b1 { width: 900px; height: 900px; left: -260px; top: 420px; background: radial-gradient(circle, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 66%); }
+      #b2 { width: 820px; height: 820px; left: 460px; top: 900px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 66%); }
+
+      /* everything sits inside the IG text box x 135-945 / y 420-1470 */
+      #hook { position: absolute; left: 0; right: 0; top: 430px; text-align: center; }
+      #ha { font-size: 88px; font-weight: 800; letter-spacing: -0.05em; line-height: 1.1; }
+      #hb { font-size: 62px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.2; color: var(--accent); }
+      #hb b { color: #e84e00; }
+
+      /* the demo panel: bold stripes that flow so the bend reads, three stat cards on top */
+      #win { position: absolute; left: 135px; top: 640px; width: 810px; height: 556px; border-radius: 44px; overflow: hidden; background: #2f6bff;
+        box-shadow: 0 22px 48px rgba(47,110,28,0.16), 0 0 0 2px rgba(148,215,104,0.6); }
+      #bgs { position: absolute; left: -200px; top: -200px; width: 3800px; height: 960px;
+        background: repeating-linear-gradient(105deg, #ff5a0a 0 64px, #7a2cff 64px 128px, #2f6bff 128px 192px, #ff3d8b 192px 256px, #19b36b 256px 320px); }
+      /* a card: real 345 x 80 px, radius 20, drawn 2x */
+      .card { position: absolute; left: 60px; width: 690px; height: 160px; border-radius: 40px; box-shadow: 0 12px 30px #0003; color: #fff; }
+      .card > i { position: absolute; inset: 0; border-radius: 40px; }
+      .cf { background: #fff; opacity: 0.2; }
+      .cl { backdrop-filter: url(#lens); -webkit-backdrop-filter: url(#lens); }
+      .cr { box-shadow: inset 0 2px 4px #fff; }
+      .tx { position: absolute; left: 44px; top: 22px; text-shadow: 0 2px 14px #000c, 0 0 4px #000a; }
+      .tx small { display: block; font-size: 32px; font-weight: 700; letter-spacing: -0.01em; line-height: 40px; opacity: 0.92; }
+      .tx b { display: block; font-size: 74px; font-weight: 800; letter-spacing: -0.045em; line-height: 78px; }
+      .gx { position: absolute; right: 44px; top: 30px; width: 220px; height: 100px; filter: drop-shadow(0 2px 6px #0005); }
+      #c1 { top: 20px; } #c2 { top: 198px; } #c3 { top: 376px; }
+
+      .ver { position: absolute; left: 0; right: 0; top: 536px; margin: 0 auto; width: max-content; height: 92px; line-height: 92px; padding: 0 34px 0 14px; border-radius: 999px;
+        background: #fff; box-shadow: 0 12px 28px rgba(47,110,28,0.18); font-size: 50px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); white-space: nowrap; }
+      .ver u { display: inline-block; text-decoration: none; height: 66px; line-height: 66px; padding: 0 20px; margin: 13px 18px 0 0; vertical-align: top; border-radius: 33px; background: var(--accent); color: #fff; text-align: center; font-size: 40px; }
+      .ver .map { height: 62px; width: 62px; object-fit: cover; object-position: left; margin: 15px 0 0 18px; vertical-align: top; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(79,154,46,0.4); }
+      #v5 { color: #e84e00; padding-left: 34px; }
+
+      /* code card: the .card rule, one line at a time */
+      #code { position: absolute; left: 135px; top: 1218px; width: 810px; border-radius: 36px; background: #ffffffee;
+        border: 2px solid rgba(148,215,104,0.75); box-shadow: 0 22px 48px rgba(47,110,28,0.14); padding: 10px 24px 12px; }
+      .hd { position: relative; line-height: 46px; font-family: "SF Mono"; font-size: 35px; font-weight: 700; color: var(--ink); white-space: pre; }
+      .cnt { position: absolute; right: 0; top: 2px; font-family: "SF"; font-size: 32px; font-weight: 800; color: #fff; background: var(--pop); border-radius: 12px; padding: 0 14px; line-height: 42px; }
+      .k { position: relative; line-height: 46px; font-family: "SF Mono"; font-size: 35px; font-weight: 700; white-space: pre; color: var(--ink); border-radius: 10px; padding-left: 10px; margin-left: -10px; }
+      .k i, .hd i { font-style: normal; color: #2f6d17; }
+      .ft { margin-top: 2px; line-height: 34px; font-size: 28px; font-weight: 650; color: #4d6b43; }
+      .ft b { font-family: "SF Mono"; font-weight: 700; color: var(--accent); }
+      /* outro (same as posts 06-11) */
+      .lq { position: absolute; overflow: hidden;
+        background: linear-gradient(145deg, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.35) 46%, rgba(148,215,104,0.22) 100%);
+        border: 1.5px solid rgba(148,215,104,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 22px 48px rgba(47,110,28,0.16); }
+      .lq.green { background: linear-gradient(135deg, #94d768 0%, #4f9a2e 100%); border-color: rgba(255,255,255,0.7); color: #fff; text-shadow: 0 2px 6px rgba(20,60,10,0.35); }
+      #lg { position: absolute; left: 430px; top: 600px; width: 220px; height: 220px; border-radius: 50%; background: #fbfdf8; border: 3px solid var(--green); box-shadow: 0 18px 40px rgba(47,110,28,0.22); }
+      #lg svg { width: 100%; height: 100%; }
+      #hp { left: 230px; top: 900px; width: 620px; height: 130px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 66px; font-weight: 800; letter-spacing: -0.04em; }
+      #cta { left: 190px; top: 1080px; width: 700px; height: 104px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 40px; font-weight: 650; letter-spacing: -0.02em; }
+      #cta b { font-family: "SF Mono"; font-weight: 800; color: #fff; background: var(--pop); border-radius: 14px; padding: 4px 16px; letter-spacing: 0.02em; }
+      #veil { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+      #stagez, #outz { position: absolute; inset: 0; transform-origin: 540px 960px; }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <filter id="lens" x="0" y="0" width="690" height="160" filterUnits="userSpaceOnUse" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+        <feImage href="data:image/png;base64,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" x="0" y="0" width="690" height="160" preserveAspectRatio="none" result="map" />
+        <feDisplacementMap in="SourceGraphic" in2="map" scale="110" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="19.4" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="19.4"></audio>
+
+      <div id="bg" class="scene clip" data-start="0" data-duration="19.4" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <div class="blob" id="b1"></div><div class="blob" id="b2"></div>
+      </div>
+
+      <div id="stage" class="scene clip" data-start="0" data-duration="17.5" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="stagez">
+          <div id="hook"><div id="ha">Glass card.</div><div id="hb"><b>3 lines</b> of CSS + 1 lens.</div></div>
+
+          <div id="win">
+            <div id="bgs"></div>
+            <div class="card" id="c1"><i class="cf"></i><i class="cl"></i><i class="cr"></i>
+              <div class="tx"><small>Visitors</small><b>8,214</b></div>
+              <svg class="gx" viewBox="0 0 220 100" fill="currentColor"><rect x="0" y="52" width="22" height="48" rx="6"/><rect x="33" y="34" width="22" height="66" rx="6"/><rect x="66" y="60" width="22" height="40" rx="6"/><rect x="99" y="22" width="22" height="78" rx="6"/><rect x="132" y="44" width="22" height="56" rx="6"/><rect x="165" y="10" width="22" height="90" rx="6"/><rect x="198" y="28" width="22" height="72" rx="6"/></svg></div>
+            <div class="card" id="c2"><i class="cf"></i><i class="cl"></i><i class="cr"></i>
+              <div class="tx"><small>Revenue</small><b>$12,480</b></div>
+              <svg class="gx" viewBox="0 0 220 100" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,84 44,62 78,72 116,38 150,50 212,12"/></svg></div>
+            <div class="card" id="c3"><i class="cf"></i><i class="cl"></i><i class="cr"></i>
+              <div class="tx"><small>Uptime</small><b>99.9%</b></div>
+              <svg class="gx" viewBox="0 0 220 100" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round"><circle cx="160" cy="50" r="40" opacity="0.35"/><path d="M160 10 A40 40 0 1 1 122 37"/></svg></div>
+          </div>
+          <div class="ver" id="v1"><u>Step 1</u>goes clear</div><div class="ver" id="v2"><u>Step 2</u>shiny edge</div><div class="ver" id="v3"><u>Step 3</u>bends light<img class="map" src="assets/lens16.png" alt=""></div><div class="ver" id="v5">= glass cards</div>
+
+          <div id="code">
+            <div class="hd"><i>.card</i> {<span class="cnt" id="n1">1 / 3</span><span class="cnt" id="n2">2 / 3</span><span class="cnt" id="n3">3 lines</span></div>
+            <div class="k" id="k1">  <i>background</i>: #fff3;</div>
+            <div class="k" id="k2">  <i>box-shadow</i>: inset 0 1px 2px #fff;</div>
+            <div class="k" id="k3">  <i>backdrop-filter</i>: url(#lens); }</div>
+            <div class="ft" id="ft"><b>#lens</b> = 1 SVG lens map (in the repo) · shown 2× size</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="out" class="scene clip" data-start="17.4" data-duration="2.0" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="outz">
+<div id="lg"><svg viewBox="0 0 256 256"><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+          <div class="lq green" id="hp">@alan.build</div>
+          <div class="lq" id="cta">Comment <b>REPO</b> for the code</div>
+        </div>
+        <div id="veil"></div>
+      </div>
+    </div>
+    <script>
+      // CSS cubic-bezier(x1,y1,x2,y2) as a function of progress x (Newton, bisection fallback); same solver as posts 09-11
+      function bez(x1, y1, x2, y2) {
+        const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+        const X = t => ((ax * t + bx) * t + cx) * t, Y = t => ((ay * t + by) * t + cy) * t, dX = t => (3 * ax * t + 2 * bx) * t + cx;
+        return x => {
+          if (x <= 0) return 0; if (x >= 1) return 1;
+          let t = x;
+          for (let i = 0; i < 8; i++) { const e = X(t) - x, d = dX(t); if (Math.abs(e) < 1e-6 || Math.abs(d) < 1e-6) break; t -= e / d; }
+          if (!(t >= 0 && t <= 1) || Math.abs(X(t) - x) > 1e-5) { let lo = 0, hi = 1; for (let i = 0; i < 40; i++) { t = (lo + hi) / 2; if (X(t) < x) lo = t; else hi = t; } }
+          return Y(t);
+        };
+      }
+      const E = bez(0.16, 1, 0.3, 1);
+      console.assert(Math.abs(E(0.25) - 0.8) < 0.15 && E(1) === 1, "bezier solver off");
+
+      const tl = gsap.timeline({ paused: true });
+      // beats follow the Chris VO (audio/vo_chris/timing.json): hook = finished dashboard, strip to one plain card, each step named out loud, lens at 12.5 s, the other cards return
+      const STRIP = 3.5, P1 = 4.0, S1 = 4.9, P2 = 7.9, S2 = 8.7, P3 = 11.7, LENS = 12.5, PAY = 15.3, OUT = 17.4, END = 19.4, EO = "power3.out", INK = "#1f1b4d";
+
+      tl.fromTo("#b1", { x: 0, y: 0 }, { x: 160, y: -120, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b2", { x: 0, y: 0 }, { x: -200, y: -260, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#bgs", { x: 0 }, { x: -2652, duration: END, ease: "none" }, 0);   // 8 stripe periods (320 / sin 105deg), so the flow never jumps
+      tl.fromTo("#outz", { scale: 1 }, { scale: 1.03, duration: END - OUT, ease: "none" }, OUT);
+
+      gsap.set([".cnt", ".ver"], { opacity: 0 });
+      gsap.set("#n3", { opacity: 1 });   // frame 0: the finished rule, all 3 lines, on the finished dashboard
+
+      // strip: the two side cards leave, the middle card goes back to a plain white box
+      tl.to(["#c1", "#c3"], { opacity: 0, scale: 0.92, duration: 0.25, ease: "power2.in" }, STRIP - 0.3);
+      tl.set("#c2 .cf", { opacity: 1 }, STRIP); tl.set(["#c2 .cl", "#c2 .cr"], { opacity: 0 }, STRIP);
+      tl.set("#c2", { color: INK }, STRIP); tl.set(["#c2 .tx", "#c2 .gx"], { textShadow: "none", filter: "none" }, STRIP);
+      tl.fromTo("#c2", { scale: 1 }, { scale: 0.96, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.inOut", immediateRender: false }, STRIP - 0.1);
+      // 1: background #fff3
+      tl.to("#c2 .cf", { opacity: 0.2, duration: 0.3, ease: EO }, S1 + 0.1);
+      tl.to("#c2", { color: "#fff", duration: 0.3, ease: EO }, S1 + 0.1);
+      tl.set("#c2 .tx", { textShadow: "0 2px 14px #000c, 0 0 4px #000a" }, S1 + 0.1); tl.set("#c2 .gx", { filter: "drop-shadow(0 2px 6px #0005)" }, S1 + 0.1);
+      // 2: inset shadow
+      tl.to("#c2 .cr", { opacity: 1, duration: 0.3, ease: EO }, S2 + 0.1);
+      // 3: the lens
+      tl.to("#c2 .cl", { opacity: 1, duration: 0.4, ease: EO }, LENS);
+      // payoff: the same rule on every card
+      tl.to("#c1", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, PAY);
+      tl.to("#c3", { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, PAY + 0.3);
+
+      // hook sub-line out, empty the code card; then each step appends its line
+      tl.to("#hb", { opacity: 0, filter: "blur(12px)", duration: 0.25, ease: "power2.in" }, STRIP - 0.3);
+      tl.to(["#k1", "#k2", "#k3", "#ft", ".cnt"], { opacity: 0, x: -24, duration: 0.25, ease: "power2.in" }, STRIP - 0.3);
+      const line = (n, at) => {
+        tl.fromTo("#k" + n, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, at);
+        tl.fromTo("#k" + n, { backgroundColor: "rgba(148,215,104,0.55)" }, { backgroundColor: "rgba(148,215,104,0)", duration: 1.2, ease: "power2.out", immediateRender: false }, at + 0.1);
+      };
+      const count = (id, at) => {
+        tl.to(".cnt", { opacity: 0, x: 0, duration: 0.1 }, at);
+        tl.fromTo(id, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)", immediateRender: false }, at + 0.05);
+      };
+      const verdict = (n, at) => {
+        tl.to(".ver:not(#v" + n + ")", { opacity: 0, duration: 0.1 }, at);
+        tl.fromTo("#v" + n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)", immediateRender: false }, at + 0.03);
+      };
+      const step = (n, at, lineAt) => { verdict(n, at); line(n, lineAt); count("#n" + n, lineAt); };
+      step(1, P1, S1 + 0.15); step(2, P2, S2 + 0.15); step(3, P3, LENS);   // the pill lands on "Step N", the line and the effect on the action
+      tl.fromTo("#ft", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, LENS + 0.5);
+      verdict(5, PAY);
+
+      tl.fromTo(".k", { backgroundColor: "rgba(148,215,104,0)" }, { backgroundColor: "rgba(148,215,104,0.32)", duration: 0.2, yoyo: true, repeat: 3, immediateRender: false }, PAY + 0.4);
+      tl.fromTo("#code", { scale: 1 }, { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut", immediateRender: false }, PAY + 0.3);
+      tl.to("#stagez", { opacity: 0, filter: "blur(14px)", duration: 0.25, ease: "power2.in" }, OUT - 0.15);
+
+      // outro
+      tl.fromTo("#lg", { scale: 0.5, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, OUT + 0.04);
+      tl.fromTo("#hp", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.7)" }, OUT + 0.12);
+      tl.fromTo("#cta", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, OUT + 0.25);
+      tl.to("#veil", { opacity: 1, duration: 0.25, ease: "power1.inOut" }, END - 0.25);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
