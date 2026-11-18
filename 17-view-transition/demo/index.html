@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Posters: page transition in 2 lines of CSS</title>
+<link rel="stylesheet" href="site.css">
+<link rel="stylesheet" href="transition.css">
+</head>
+<body>
+<!-- Click the Sunrise poster. No JavaScript: the 2 lines in transition.css do it (Chrome / Edge 126+, Safari 18.2+; other browsers just swap pages).
+     A view-transition-name must be unique on a page, so only Sunrise is wired up. For more posters give each pair its own name. -->
+<main>
+  <h1>Posters</h1>
+  <div class="grid">
+    <span class="art a1"></span><span class="art a2"></span><span class="art a3"></span>
+    <span class="art a4"></span><span class="art a5"></span>
+    <a class="art sun" href="detail.html" aria-label="Sunrise poster"></a>
+  </div>
+</main>
+</body>
+</html>
