@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* AlanBuild post 17 "Page transition. 2 lines of CSS.": cross-document CSS View Transitions. A frame-seeked render cannot navigate between documents, so the swap / fade / morph are GSAP tweens timed like the browser default (0.25 s, ease). The real 2-line demo is in the repo (17-view-transition/index.html + detail.html). Built from post 16. */
+      @font-face { font-family: "SF"; src: url('assets/fonts/SFNS.ttf') format('truetype'); font-weight: 1 1000; }
+      @font-face { font-family: "SF Mono"; src: url('assets/fonts/SFNSMono.ttf') format('truetype'); font-weight: 1 1000; }
+      :root { --paper: #f5faf1; --ink: #1f4d12; --accent: #4f9a2e; --green: #94d768; --pop: #ff5a0a; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; font-family: "SF"; color: var(--ink); background: var(--paper); }
+      .scene { position: absolute; inset: 0; }
+      .blob { position: absolute; border-radius: 50%; }
+      #b1 { width: 900px; height: 900px; left: -260px; top: 420px; background: radial-gradient(circle, rgba(148,215,104,0.45) 0%, rgba(148,215,104,0) 66%); }
+      #b2 { width: 820px; height: 820px; left: 460px; top: 900px; background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 66%); }
+
+      /* everything sits inside the IG text box x 135-945 / y 420-1470 */
+      #hook { position: absolute; left: 0; right: 0; top: 430px; text-align: center; }
+      #ha { font-size: 88px; font-weight: 800; letter-spacing: -0.05em; line-height: 1.1; }
+      #hb { font-size: 62px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.2; color: var(--accent); }
+      #hb b { color: #e84e00; }
+
+      /* the demo: a tiny made-up poster shop in a browser window, two "documents" (#pg grid, #pd detail) */
+      #win { position: absolute; left: 135px; top: 636px; width: 810px; height: 604px; border-radius: 44px; overflow: hidden; background: #fff; color: #1a1d29;
+        box-shadow: 0 22px 48px rgba(47,110,28,0.16), 0 0 0 2px rgba(148,215,104,0.6); }
+      #bar { position: absolute; left: 0; top: 0; width: 810px; height: 64px; background: #eef1ec; }
+      #bar s { position: absolute; top: 24px; width: 16px; height: 16px; border-radius: 50%; background: #c9d2c4; }
+      #url { position: absolute; left: 215px; top: 11px; width: 380px; height: 42px; border-radius: 21px; background: #fff; }
+      #url span { position: absolute; left: 0; right: 0; text-align: center; line-height: 42px; font-family: "SF Mono"; font-size: 28px; font-weight: 600; color: #3d4638; }
+      .page { position: absolute; left: 0; top: 64px; width: 810px; height: 540px; }
+      #pg h4 { position: absolute; left: 30px; top: 20px; font-size: 44px; font-weight: 800; letter-spacing: -0.04em; line-height: 56px; }
+      .art { position: absolute; left: 0; top: 0; width: 236px; height: 204px; border-radius: 20px; transform-origin: 0 0; }
+      .a1 { left: 30px; top: 88px; background: radial-gradient(circle at 70% 30%, #fff6 0 18%, #0000 18.5%), linear-gradient(200deg, #2f6bff, #19b36b); }
+      .a2 { left: 287px; top: 88px; background: radial-gradient(circle at 30% 70%, #ffd84a 0 26%, #0000 26.5%), linear-gradient(140deg, #7a2cff, #2f6bff); }
+      .a3 { left: 544px; top: 88px; background: repeating-linear-gradient(45deg, #19b36b 0 34px, #0e8f52 34px 68px); }
+      .a4 { left: 30px; top: 310px; background: radial-gradient(circle at 50% 50%, #ff3d8b 0 30%, #0000 30.5%), linear-gradient(0deg, #ffe3c2, #ffd0e2); }
+      .a5 { left: 287px; top: 310px; background: radial-gradient(circle at 50% 110%, #1a1d29 0 46%, #0000 46.5%), linear-gradient(180deg, #2f6bff, #9fc0ff); }
+      .sun { background: radial-gradient(ellipse 80% 42% at 50% 112%, #3b1466 0 99%, #0000 100%), radial-gradient(circle at 50% 56%, #ffe9a8 0 24%, #0000 24.5%), linear-gradient(170deg, #ff5a0a, #ff3d8b 62%, #7a2cff); }
+      #pd h5 { position: absolute; left: 536px; top: 34px; font-size: 54px; font-weight: 800; letter-spacing: -0.045em; line-height: 62px; }
+      #pd p { position: absolute; left: 538px; top: 102px; font-size: 27px; font-weight: 600; line-height: 36px; color: #5b6472; }
+      #pd em { position: absolute; left: 536px; top: 196px; font-style: normal; font-size: 50px; font-weight: 800; letter-spacing: -0.03em; line-height: 60px; }
+      #buy { position: absolute; left: 536px; top: 290px; width: 244px; height: 70px; border-radius: 35px; background: #1a1d29; color: #fff; text-align: center; line-height: 70px; font-size: 30px; font-weight: 700; }
+      #back { position: absolute; left: 30px; top: 462px; height: 52px; line-height: 52px; padding: 0 22px; border-radius: 26px; background: #eef1ec; font-size: 28px; font-weight: 700; color: #1a1d29; }
+      /* the shared name, shown on the image while it travels */
+      #tag { position: absolute; left: 10px; top: 10px; height: 40px; line-height: 40px; padding: 0 12px; border-radius: 10px; background: #fff; color: #1f4d12; font-family: "SF Mono"; font-size: 28px; font-weight: 800; }
+      #ring { position: absolute; inset: 0; border-radius: 20px; box-shadow: inset 0 0 0 5px #94d768; }
+      #cur { position: absolute; left: 0; top: 0; width: 64px; height: 64px; }
+      #cur svg { position: absolute; left: 0; top: 0; width: 64px; height: 64px; filter: drop-shadow(0 4px 6px #0006); }
+      #rip { position: absolute; left: -30px; top: -30px; width: 60px; height: 60px; border-radius: 50%; border: 6px solid #ff5a0a; opacity: 0; }
+
+      .ver { position: absolute; left: 0; right: 0; top: 536px; margin: 0 auto; width: max-content; height: 92px; line-height: 92px; padding: 0 34px 0 14px; border-radius: 999px;
+        background: #fff; box-shadow: 0 12px 28px rgba(47,110,28,0.18); font-size: 50px; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); white-space: nowrap; }
+      .ver u { display: inline-block; text-decoration: none; height: 66px; line-height: 66px; padding: 0 20px; margin: 13px 18px 0 0; vertical-align: top; border-radius: 33px; background: var(--accent); color: #fff; text-align: center; font-size: 40px; }
+      #v0 u { background: #8a938a; }
+      #v5 { color: #e84e00; padding-left: 34px; }
+
+      /* code card: transition.css, one line at a time */
+      #code { position: absolute; left: 135px; top: 1258px; width: 810px; border-radius: 36px; background: #ffffffee;
+        border: 2px solid rgba(148,215,104,0.75); box-shadow: 0 22px 48px rgba(47,110,28,0.14); padding: 10px 22px 12px 26px; }
+      .hd { position: relative; line-height: 46px; font-family: "SF Mono"; font-size: 28px; font-weight: 700; color: #4d6b43; white-space: pre; }
+      .cnt { position: absolute; right: 0; top: 2px; font-family: "SF"; font-size: 32px; font-weight: 800; color: #fff; background: var(--pop); border-radius: 12px; padding: 0 14px; line-height: 42px; }
+      .k { position: relative; line-height: 46px; font-family: "SF Mono"; font-size: 31px; font-weight: 700; white-space: pre; color: var(--ink); border-radius: 10px; padding-left: 10px; margin-left: -10px; }
+      .k i { font-style: normal; color: #2f6d17; }
+      .ft { margin-top: 2px; line-height: 34px; font-size: 28px; font-weight: 650; color: #4d6b43; }
+      .ft b { font-family: "SF Mono"; font-weight: 700; color: var(--accent); }
+      /* outro (same as posts 06-11) */
+      .lq { position: absolute; overflow: hidden;
+        background: linear-gradient(145deg, rgba(255,255,255,0.70) 0%, rgba(255,255,255,0.35) 46%, rgba(148,215,104,0.22) 100%);
+        border: 1.5px solid rgba(148,215,104,0.75); box-shadow: inset 0 1.5px 0 rgba(255,255,255,0.95), 0 22px 48px rgba(47,110,28,0.16); }
+      .lq.green { background: linear-gradient(135deg, #94d768 0%, #4f9a2e 100%); border-color: rgba(255,255,255,0.7); color: #fff; text-shadow: 0 2px 6px rgba(20,60,10,0.35); }
+      #lg { position: absolute; left: 430px; top: 600px; width: 220px; height: 220px; border-radius: 50%; background: #fbfdf8; border: 3px solid var(--green); box-shadow: 0 18px 40px rgba(47,110,28,0.22); }
+      #lg svg { width: 100%; height: 100%; }
+      #hp { left: 230px; top: 900px; width: 620px; height: 130px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 66px; font-weight: 800; letter-spacing: -0.04em; }
+      #cta { left: 190px; top: 1080px; width: 700px; height: 104px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 40px; font-weight: 650; letter-spacing: -0.02em; }
+      #cta b { font-family: "SF Mono"; font-weight: 800; color: #fff; background: var(--pop); border-radius: 14px; padding: 4px 16px; letter-spacing: 0.02em; }
+      #veil { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+      #stagez, #outz { position: absolute; inset: 0; transform-origin: 540px 960px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="18.3" data-width="1080" data-height="1920" data-layout-allow-overlap>
+      <audio id="music" src="assets/soundtrack.wav" data-start="0" data-duration="18.3"></audio>
+
+      <div id="bg" class="scene clip" data-start="0" data-duration="18.3" data-track-index="0" data-track-kind="graphics" data-layout-allow-overflow>
+        <div class="blob" id="b1"></div><div class="blob" id="b2"></div>
+      </div>
+
+      <div id="stage" class="scene clip" data-start="0" data-duration="16.4" data-track-index="1" data-track-kind="graphics" data-layout-allow-overlap data-layout-allow-overflow>
+        <div id="stagez">
+          <div id="hook"><div id="ha">Page transition.</div><div id="hb"><b>2 lines</b> of CSS.</div></div>
+
+          <div id="win">
+            <div id="bar"><s style="left:26px"></s><s style="left:52px"></s><s style="left:78px"></s>
+              <div id="url"><span id="u1">posters.demo</span><span id="u2">posters.demo/detail</span></div></div>
+            <div class="page" id="pg"><h4>Posters</h4>
+              <div class="art a1"></div><div class="art a2"></div><div class="art a3"></div><div class="art a4"></div><div class="art a5"></div>
+              <div class="art sun" id="im"></div></div>
+            <div class="page" id="pd"><div class="art sun" id="hero"></div>
+              <h5>Sunrise</h5><p>Poster, A2<br>Ships rolled</p><em>$24</em><div id="buy">Add to bag</div><div id="back">&larr; All posters</div></div>
+            <div class="page" id="fl"><div class="art sun" id="fly"><div id="ring"></div><div id="tag">card</div></div></div>
+            <div id="cur"><div id="rip"></div><svg viewBox="0 0 64 64"><path d="M6 4 L6 50 L18 39 L27 58 L36 54 L27 36 L43 36 Z" fill="#fff" stroke="#1a1d29" stroke-width="4" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="ver" id="v0"><u>Before</u>pages just swap</div><div class="ver" id="v1"><u>Step 1</u>pages fade</div><div class="ver" id="v2"><u>Step 2</u>the image morphs</div><div class="ver" id="v5">0 lines of JavaScript</div>
+
+          <div id="code">
+            <div class="hd">transition.css<span class="cnt" id="n1">1 / 2</span><span class="cnt" id="n2">2 lines</span></div>
+            <div class="k" id="k1"><i>@view-transition</i> { <i>navigation</i>: auto; }</div>
+            <div class="k" id="k2">.sun { <i>view-transition-name</i>: card; }</div>
+            <div class="ft" id="ft"><b>.sun</b> = the image, on both pages · no JavaScript</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="out" class="scene clip" data-start="16.3" data-duration="2.0" data-track-index="3" data-track-kind="graphics" data-layout-allow-overlap>
+        <div id="outz">
+<div id="lg"><svg viewBox="0 0 256 256"><g transform="translate(128 128) scale(0.68) translate(-128 -128)"><g transform="translate(128 126) scale(0.86) translate(-147.5 -128)"><path fill="#1f4d12" fill-rule="evenodd" d="M38 216 L140 40 H172 V216 H140 V182 H93.7 L74 216 Z M140 102.1 V160 H106.5 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 40 H190 A42 42 0 0 1 190 124 H172 Z M172 70 V94 H190 A12 12 0 0 0 190 70 Z"/><path fill="#7cc552" fill-rule="evenodd" d="M172 94 H196 A61 61 0 0 1 196 216 H172 Z M172 124 V186 H196 A31 31 0 0 0 196 124 Z"/></g></g></svg></div>
+          <div class="lq green" id="hp">@alan.build</div>
+          <div class="lq" id="cta">Comment <b>REPO</b> for the code</div>
+        </div>
+        <div id="veil"></div>
+      </div>
+    </div>
+    <script>
+      // CSS cubic-bezier(x1,y1,x2,y2) as a function of progress x (Newton, bisection fallback); same solver as posts 09-11
+      function bez(x1, y1, x2, y2) {
+        const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+        const X = t => ((ax * t + bx) * t + cx) * t, Y = t => ((ay * t + by) * t + cy) * t, dX = t => (3 * ax * t + 2 * bx) * t + cx;
+        return x => {
+          if (x <= 0) return 0; if (x >= 1) return 1;
+          let t = x;
+          for (let i = 0; i < 8; i++) { const e = X(t) - x, d = dX(t); if (Math.abs(e) < 1e-6 || Math.abs(d) < 1e-6) break; t -= e / d; }
+          if (!(t >= 0 && t <= 1) || Math.abs(X(t) - x) > 1e-5) { let lo = 0, hi = 1; for (let i = 0; i < 40; i++) { t = (lo + hi) / 2; if (X(t) < x) lo = t; else hi = t; } }
+          return Y(t);
+        };
+      }
+      const EASE = bez(0.25, 0.1, 0.25, 1);   // CSS "ease", the default timing of ::view-transition-group / -old / -new
+      console.assert(Math.abs(EASE(0.5) - 0.8) < 0.03 && EASE(1) === 1, "bezier solver off");
+
+      const tl = gsap.timeline({ paused: true });
+      // beats follow the Chris VO (audio/vo_chris/timing.json): hook = the finished morph already running, then no lines (swap), line 1 (fade), line 2 (morph), payoff
+      const STRIP = 3.6, P0 = 3.7, P1 = 5.9, L1 = 6.6, P2 = 10.1, L2 = 11.3, PAY = 14.9, OUT = 16.3, END = 18.3, VT = 0.25;
+      const THUMB = { x: 544, y: 310, scale: 1 }, HERO = { x: 30, y: 30, scale: 2 }, CT = { x: 672, y: 490 }, CB = { x: 150, y: 552 };
+
+      tl.fromTo("#b1", { x: 0, y: 0 }, { x: 160, y: -120, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#b2", { x: 0, y: 0 }, { x: -200, y: -260, duration: END, ease: "sine.inOut" }, 0);
+      tl.fromTo("#outz", { scale: 1 }, { scale: 1.03, duration: END - OUT, ease: "none" }, OUT);
+
+      gsap.set([".cnt", ".ver", "#im", "#hero", "#u1", "#pg"], { opacity: 0 });
+      gsap.set("#n2", { opacity: 1 });   // frame 0: both lines on the card, the morph already under way
+      gsap.set("#im", THUMB); gsap.set("#hero", HERO); gsap.set("#cur", CT);
+
+      // one navigation between the two "documents": swap = no CSS, fade = line 1, morph = line 1 + line 2
+      const press = at => {
+        tl.fromTo("#cur", { scale: 1 }, { scale: 0.8, duration: 0.07, yoyo: true, repeat: 1, ease: "power2.inOut", immediateRender: false }, at);
+        tl.fromTo("#rip", { scale: 0.3, opacity: 0.9 }, { scale: 1.5, opacity: 0, duration: 0.35, ease: "power2.out", immediateRender: false }, at + 0.05);
+      };
+      const nav = (mode, at, fwd) => {
+        press(at - 0.12);
+        const d = mode === "swap" ? 0.001 : VT, on = fwd ? ["#pd", "#u2"] : ["#pg", "#u1"], off = fwd ? ["#pg", "#u1"] : ["#pd", "#u2"];
+        tl.to(on, { opacity: 1, duration: d, ease: EASE }, at); tl.to(off, { opacity: 0, duration: d, ease: EASE }, at);
+        if (mode === "morph") tl.to("#fly", { ...(fwd ? HERO : THUMB), duration: VT, ease: EASE }, at);
+      };
+      const move = (fwd, at, dur) => tl.to("#cur", { ...(fwd ? CT : CB), duration: dur, ease: "power2.inOut" }, at);
+
+      // hook: frame 0 is 35 % into the morph
+      const p0 = EASE(0.35), mix = k => THUMB[k] + (HERO[k] - THUMB[k]) * p0;
+      tl.fromTo("#fly", { x: mix("x"), y: mix("y"), scale: mix("scale") }, { ...HERO, duration: 0.3, ease: "power2.out" }, 0);
+      tl.fromTo("#pd", { opacity: p0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
+      tl.fromTo("#u2", { opacity: p0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 0);
+      tl.fromTo("#pg", { opacity: 1 - p0 }, { opacity: 0, duration: 0.3, ease: "power2.out" }, 0);
+      tl.fromTo(["#ring", "#tag"], { opacity: 0 }, { opacity: 0, duration: 0.01 }, 0);
+      move(false, 0.5, 0.5); nav("morph", 1.25, false);
+      move(true, 1.6, 0.5); nav("morph", 2.35, true);
+      move(false, 2.65, 0.4); nav("morph", 3.3, false);
+
+      // strip: hook sub-line out, the card empties, the image goes back to two separate elements
+      tl.set("#fly", { opacity: 0 }, STRIP); tl.set(["#im", "#hero"], { opacity: 1 }, STRIP);
+      tl.to("#hb", { opacity: 0, filter: "blur(12px)", duration: 0.25, ease: "power2.in" }, STRIP - 0.1);
+      tl.to(["#k1", "#k2", "#ft", ".cnt"], { opacity: 0, x: -24, duration: 0.25, ease: "power2.in" }, STRIP - 0.1);
+      // before: no lines, the page hard-swaps
+      move(true, 3.9, 0.45); nav("swap", 4.65, true);
+      move(false, 4.8, 0.35); nav("swap", 5.35, false);
+      // step 1: @view-transition -> the default cross-fade
+      move(true, 7.4, 0.5); nav("fade", 8.2, true);
+      move(false, 8.6, 0.4); nav("fade", 9.3, false);
+      // step 2: the shared name -> the image morphs; the name tag rides on it
+      tl.set("#fly", { opacity: 1 }, L2 + 0.3); tl.set(["#im", "#hero"], { opacity: 0 }, L2 + 0.3);
+      tl.to(["#ring", "#tag"], { opacity: 1, duration: 0.25, ease: "power2.out" }, L2 + 0.3);
+      move(true, 12.5, 0.5); nav("morph", 13.4, true);
+      move(false, 13.8, 0.4); nav("morph", 14.5, false);
+      tl.to(["#ring", "#tag"], { opacity: 0, duration: 0.2 }, PAY);
+      nav("morph", 15.4, true);
+      tl.to("#cur", { ...CT, duration: 0.4, ease: "power2.inOut" }, 14.85);
+
+      const line = (n, at) => {
+        tl.fromTo("#k" + n, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, at);
+        tl.fromTo("#k" + n, { backgroundColor: "rgba(148,215,104,0.55)" }, { backgroundColor: "rgba(148,215,104,0)", duration: 1.2, ease: "power2.out", immediateRender: false }, at + 0.1);
+      };
+      const count = (id, at) => {
+        tl.to(".cnt", { opacity: 0, x: 0, duration: 0.1 }, at);
+        tl.fromTo(id, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)", immediateRender: false }, at + 0.05);
+      };
+      const verdict = (n, at) => {
+        tl.to(".ver:not(#v" + n + ")", { opacity: 0, duration: 0.1 }, at);
+        tl.fromTo("#v" + n, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.2)", immediateRender: false }, at + 0.03);
+      };
+      verdict(0, P0);
+      verdict(1, P1); line(1, L1); count("#n1", L1);   // the pill lands on "Step N", the line when it is named, then it is held before the tap
+      verdict(2, P2); line(2, L2); count("#n2", L2);
+      tl.fromTo("#ft", { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, L2 + 0.5);
+      verdict(5, PAY);
+
+      tl.fromTo(".k", { backgroundColor: "rgba(148,215,104,0)" }, { backgroundColor: "rgba(148,215,104,0.32)", duration: 0.2, yoyo: true, repeat: 3, immediateRender: false }, PAY + 0.4);
+      tl.fromTo("#code", { scale: 1 }, { scale: 1.02, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.inOut", immediateRender: false }, PAY + 0.3);
+      tl.to("#stagez", { opacity: 0, filter: "blur(14px)", duration: 0.25, ease: "power2.in" }, OUT - 0.15);
+
+      // outro
+      tl.fromTo("#lg", { scale: 0.5, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.7)" }, OUT + 0.04);
+      tl.fromTo("#hp", { opacity: 0, scaleX: 0.4, scaleY: 0.7 }, { opacity: 1, scaleX: 1, scaleY: 1, duration: 0.7, ease: "elastic.out(1, 0.7)" }, OUT + 0.12);
+      tl.fromTo("#cta", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, OUT + 0.25);
+      tl.to("#veil", { opacity: 1, duration: 0.25, ease: "power1.inOut" }, END - 0.25);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
