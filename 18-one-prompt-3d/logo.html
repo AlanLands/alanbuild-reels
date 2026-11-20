@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AB Glass Badge</title>
+<style>
+  :root { --deep: #1F4D12; --light: #7CC552; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; background: #fff; overflow: hidden;
+    perspective: 1200px; font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .scene { position: relative; width: 300px; height: 300px; transform-style: preserve-3d;
+    animation: spin 14s linear infinite; }
+  .layer { position: absolute; inset: 0; border-radius: 72px; }
+  .edge { background: linear-gradient(135deg, rgba(124,197,82,.35), rgba(31,77,18,.45)); }
+  .face {
+    background: linear-gradient(145deg, rgba(124,197,82,.55), rgba(31,77,18,.35) 60%, rgba(124,197,82,.25));
+    border: 2px solid rgba(255,255,255,.7);
+    box-shadow: inset 0 2px 18px rgba(255,255,255,.8), inset 0 -20px 40px rgba(31,77,18,.35);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    display: grid; place-items: center; overflow: hidden;
+  }
+  .face::before { content: ""; position: absolute; inset: -40%;
+    background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.65) 50%, transparent 58%);
+    animation: shine 7s ease-in-out infinite; }
+  .letters { position: relative; font-size: 150px; font-weight: 800; letter-spacing: -10px;
+    color: var(--deep); text-shadow: 0 1px 0 var(--light), 0 6px 18px rgba(31,77,18,.35); }
+  .letters span { color: var(--light); text-shadow: 0 1px 0 #fff, 0 6px 18px rgba(31,77,18,.3); }
+  .back .letters { transform: scaleX(-1); opacity: .35; }
+  .shadow { position: absolute; width: 260px; height: 40px; top: calc(50% + 190px); left: 50%;
+    transform: translateX(-50%); border-radius: 50%;
+    background: radial-gradient(rgba(31,77,18,.25), transparent 70%); filter: blur(6px);
+    animation: pulse 7s ease-in-out infinite; }
+  @keyframes spin { from { transform: rotateX(12deg) rotateY(0); } to { transform: rotateX(12deg) rotateY(360deg); } }
+  @keyframes shine { 0%,100% { transform: translateX(-30%); } 50% { transform: translateX(30%); } }
+  @keyframes pulse { 0%,100% { opacity: 1; width: 260px; } 50% { opacity: .5; width: 120px; } }
+  @media (prefers-reduced-motion: reduce) { .scene, .face::before, .shadow { animation: none; } }
+</style>
+</head>
+<body>
+  <div class="scene" id="badge"></div>
+  <div class="shadow"></div>
+<script>
+  const badge = document.getElementById('badge'), depth = 36, steps = 14;
+  for (let i = 1; i < steps; i++) {
+    const l = document.createElement('div');
+    l.className = 'layer edge';
+    l.style.transform = `translateZ(${-depth / 2 + (depth * i) / steps}px)`;
+    badge.appendChild(l);
+  }
+  const face = (cls, z, rot) => {
+    const f = document.createElement('div');
+    f.className = `layer face ${cls}`;
+    f.style.transform = `${rot} translateZ(${z}px)`;
+    f.innerHTML = '<div class="letters">A<span>B</span></div>';
+    badge.appendChild(f);
+  };
+  face('front', depth / 2, '');
+  face('back', depth / 2, 'rotateY(180deg)');
+</script>
+</body>
+</html>
