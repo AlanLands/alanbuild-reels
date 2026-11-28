@@ -5,6 +5,8 @@ that [HyperFrames](https://hyperframes.heygen.com) renders frame by frame into a
 the motion is a paused [GSAP](https://gsap.com) timeline, the look is plain CSS, and the sound is a mixed track of
 real recorded sounds.
 
+**Latest, "9 glass buttons you can make with Claude":** open [`21-nine-glass-buttons/buttons.html`](21-nine-glass-buttons/buttons.html) (download it and open in Chrome or Edge; notes in the [folder README](21-nine-glass-buttons)).
+
 | Folder | Reel | Length |
 |---|---|---|
 | [`intro/`](intro) | "A new beginning": word roller, liquid-glass profile card, finger tap on Follow, end card | 11.4 s |
